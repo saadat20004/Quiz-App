@@ -8,11 +8,7 @@ class UserTopBar extends StatelessWidget {
   final String hintText;
   final List<Widget>? actions;
 
-  const UserTopBar({
-    super.key,
-    required this.hintText,
-    this.actions,
-  });
+  const UserTopBar({super.key, required this.hintText, this.actions});
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +17,7 @@ class UserTopBar extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: AppTextField(
-            hintText: hintText,
-            prefixIcon: Icons.search,
-          ),
+          child: AppTextField(hintText: hintText, prefixIcon: Icons.search),
         ),
         const SizedBox(width: AppSizes.md),
         Container(

@@ -1,16 +1,126 @@
 import 'package:flutter/material.dart';
+
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
-import '../../../core/theme/theme_controller.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/section_title.dart';
-import '../../../shared/widgets/user_sidebar.dart';
 import '../../../routes/app_routes.dart';
+import '../../../shared/widgets/user_sidebar.dart';
+import '../../../shared/widgets/user_top_bar.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final GlobalKey<FormState> _profileFormKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _passwordFormKey = GlobalKey<FormState>();
+
+  final TextEditingController _fullNameController =
+      TextEditingController(text: 'Asim Hafeez');
+  final TextEditingController _emailController =
+      TextEditingController(text: 'asim@example.com');
+  final TextEditingController _mobileController =
+      TextEditingController(text: '03001234567');
+  final TextEditingController _usernameController =
+      TextEditingController(text: 'asimhafeez');
+
+  final TextEditingController _currentPasswordController =
+      TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+
+  @override
+  void dispose() {
+    _fullNameController.dispose();
+    _emailController.dispose();
+    _mobileController.dispose();
+    _usernameController.dispose();
+    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  String? _validateRequired(String? value, String field) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Please enter $field';
+    }
+    return null;
+  }
+
+  String? _validateEmail(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Please enter email';
+    }
+
+    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+    if (!emailRegex.hasMatch(value.trim())) {
+      return 'Please enter a valid email';
+    }
+
+    return null;
+  }
+
+  String? _validateMobile(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Please enter mobile number';
+    }
+    if (value.trim().length < 10) {
+      return 'Mobile number looks too short';
+    }
+    return null;
+  }
+
+  String? _validateNewPassword(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Please enter new password';
+    }
+    if (value.trim().length < 6) {
+      return 'Password must be at least 6 characters';
+    }
+    return null;
+  }
+
+  String? _validateConfirmPassword(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Please confirm password';
+    }
+    if (value.trim() != _newPasswordController.text.trim()) {
+      return 'Passwords do not match';
+    }
+    return null;
+  }
+
+  void _saveProfile() {
+    if (_profileFormKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Profile updated successfully'),
+        ),
+      );
+    }
+  }
+
+  void _updatePassword() {
+    if (_passwordFormKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password updated successfully'),
+        ),
+      );
+      _currentPasswordController.clear();
+      _newPasswordController.clear();
+      _confirmPasswordController.clear();
+      setState(() {});
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,29 +132,23 @@ class ProfileScreen extends StatelessWidget {
         height: double.infinity,
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkBackground : AppColors.lightBackground,
-          gradient: isDark
-              ? AppColors.darkBackgroundGlow
-              : LinearGradient(
-                  colors: [
-                    Colors.white,
-                    AppColors.primary.withOpacity(0.04),
-                    AppColors.lightBackground,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+          gradient: isDark ? AppColors.darkBackgroundGlow : null,
         ),
         child: SafeArea(
           child: Row(
             children: [
-              const UserSidebar(selectedRoute: AppRoutes.profile),
+              const UserSidebar(
+                selectedRoute: AppRoutes.profile,
+              ),
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(AppSizes.lg),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const _ProfileTopBar(),
+                      const UserTopBar(
+                        hintText: 'Search settings or profile fields...',
+                      ),
                       const SizedBox(height: AppSizes.xl),
                       const SectionTitle(
                         title: 'Profile',
@@ -52,23 +156,23 @@ class ProfileScreen extends StatelessWidget {
                             'Manage your personal information and account settings.',
                       ),
                       const SizedBox(height: AppSizes.lg),
-                      _buildProfileHeader(context),
+                      _buildProfileHeader(),
                       const SizedBox(height: AppSizes.lg),
-                      const Row(
+                      Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
                             flex: 3,
                             child: Column(
                               children: [
-                                _PersonalInfoCard(),
-                                SizedBox(height: AppSizes.lg),
-                                _PasswordCard(),
+                                _buildPersonalInfoCard(),
+                                const SizedBox(height: AppSizes.lg),
+                                _buildPasswordCard(),
                               ],
                             ),
                           ),
-                          SizedBox(width: AppSizes.lg),
-                          Expanded(
+                          const SizedBox(width: AppSizes.lg),
+                          const Expanded(
                             flex: 2,
                             child: Column(
                               children: [
@@ -91,7 +195,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileHeader(BuildContext context) {
+  Widget _buildProfileHeader() {
     return AppCard(
       child: Row(
         children: [
@@ -102,7 +206,11 @@ class ProfileScreen extends StatelessWidget {
               gradient: AppColors.primaryGradient,
               borderRadius: BorderRadius.circular(24),
             ),
-            child: const Icon(Icons.person, size: 48, color: Colors.white),
+            child: const Icon(
+              Icons.person,
+              size: 48,
+              color: Colors.white,
+            ),
           ),
           const SizedBox(width: AppSizes.lg),
           const Expanded(
@@ -111,7 +219,10 @@ class ProfileScreen extends StatelessWidget {
               children: [
                 Text(
                   'Asim Hafeez',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 SizedBox(height: AppSizes.xs),
                 Text(
@@ -146,139 +257,102 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
-}
 
-class _ProfileTopBar extends StatelessWidget {
-  const _ProfileTopBar();
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Row(
-      children: [
-        const Expanded(
-          child: AppTextField(
-            hintText: 'Search settings or profile fields...',
-            prefixIcon: Icons.search,
-          ),
-        ),
-        const SizedBox(width: AppSizes.md),
-        Container(
-          decoration: BoxDecoration(
-            color: isDark
-                ? AppColors.darkCard.withOpacity(0.7)
-                : Colors.white.withOpacity(0.95),
-            border: Border.all(
-              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-            ),
-            borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-          ),
-          child: IconButton(
-            onPressed: () {
-              appThemeController.toggleTheme();
-            },
-            icon: Icon(
-              isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-              color: AppColors.primary,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _PersonalInfoCard extends StatelessWidget {
-  const _PersonalInfoCard();
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildPersonalInfoCard() {
     return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SectionTitle(
-            title: 'Personal Information',
-            subtitle: 'Update your basic details',
-          ),
-          const SizedBox(height: AppSizes.lg),
-          const AppTextField(
-            hintText: 'Full Name',
-            prefixIcon: Icons.person_outline,
-          ),
-          const SizedBox(height: AppSizes.md),
-          const AppTextField(
-            hintText: 'Email Address',
-            prefixIcon: Icons.email_outlined,
-          ),
-          const SizedBox(height: AppSizes.md),
-          const AppTextField(
-            hintText: 'Mobile Number',
-            prefixIcon: Icons.phone_outlined,
-          ),
-          const SizedBox(height: AppSizes.md),
-          const AppTextField(
-            hintText: 'Username',
-            prefixIcon: Icons.alternate_email,
-          ),
-          const SizedBox(height: AppSizes.lg),
-          AppButton(
-            text: 'Save Changes',
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile updated successfully')),
-              );
-            },
-          ),
-        ],
+      child: Form(
+        key: _profileFormKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SectionTitle(
+              title: 'Personal Information',
+              subtitle: 'Update your basic details',
+            ),
+            const SizedBox(height: AppSizes.lg),
+            AppTextField(
+              hintText: 'Full Name',
+              prefixIcon: Icons.person_outline,
+              controller: _fullNameController,
+              validator: (value) => _validateRequired(value, 'full name'),
+            ),
+            const SizedBox(height: AppSizes.md),
+            AppTextField(
+              hintText: 'Email Address',
+              prefixIcon: Icons.email_outlined,
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              validator: _validateEmail,
+            ),
+            const SizedBox(height: AppSizes.md),
+            AppTextField(
+              hintText: 'Mobile Number',
+              prefixIcon: Icons.phone_outlined,
+              controller: _mobileController,
+              keyboardType: TextInputType.phone,
+              validator: _validateMobile,
+            ),
+            const SizedBox(height: AppSizes.md),
+            AppTextField(
+              hintText: 'Username',
+              prefixIcon: Icons.alternate_email,
+              controller: _usernameController,
+              validator: (value) => _validateRequired(value, 'username'),
+            ),
+            const SizedBox(height: AppSizes.lg),
+            AppButton(
+              text: 'Save Changes',
+              onPressed: _saveProfile,
+            ),
+          ],
+        ),
       ),
     );
   }
-}
 
-class _PasswordCard extends StatelessWidget {
-  const _PasswordCard();
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildPasswordCard() {
     return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SectionTitle(
-            title: 'Change Password',
-            subtitle: 'Keep your account secure',
-          ),
-          const SizedBox(height: AppSizes.lg),
-          const AppTextField(
-            hintText: 'Current Password',
-            prefixIcon: Icons.lock_outline,
-            obscureText: true,
-          ),
-          const SizedBox(height: AppSizes.md),
-          const AppTextField(
-            hintText: 'New Password',
-            prefixIcon: Icons.lock_outline,
-            obscureText: true,
-          ),
-          const SizedBox(height: AppSizes.md),
-          const AppTextField(
-            hintText: 'Confirm New Password',
-            prefixIcon: Icons.lock_outline,
-            obscureText: true,
-          ),
-          const SizedBox(height: AppSizes.lg),
-          AppButton(
-            text: 'Update Password',
-            isOutlined: true,
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Password updated successfully')),
-              );
-            },
-          ),
-        ],
+      child: Form(
+        key: _passwordFormKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SectionTitle(
+              title: 'Change Password',
+              subtitle: 'Keep your account secure',
+            ),
+            const SizedBox(height: AppSizes.lg),
+            AppTextField(
+              hintText: 'Current Password',
+              prefixIcon: Icons.lock_outline,
+              obscureText: true,
+              controller: _currentPasswordController,
+              validator: (value) => _validateRequired(value, 'current password'),
+            ),
+            const SizedBox(height: AppSizes.md),
+            AppTextField(
+              hintText: 'New Password',
+              prefixIcon: Icons.lock_outline,
+              obscureText: true,
+              controller: _newPasswordController,
+              validator: _validateNewPassword,
+            ),
+            const SizedBox(height: AppSizes.md),
+            AppTextField(
+              hintText: 'Confirm New Password',
+              prefixIcon: Icons.lock_outline,
+              obscureText: true,
+              controller: _confirmPasswordController,
+              validator: _validateConfirmPassword,
+            ),
+            const SizedBox(height: AppSizes.lg),
+            AppButton(
+              text: 'Update Password',
+              isOutlined: true,
+              onPressed: _updatePassword,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -290,9 +364,9 @@ class _ProfileStatsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           SectionTitle(
             title: 'Account Stats',
             subtitle: 'Your quiz activity summary',
@@ -319,9 +393,9 @@ class _PreferencesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           SectionTitle(
             title: 'Preferences',
             subtitle: 'Manage your interface settings',
@@ -354,7 +428,10 @@ class _ProfileStatRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _ProfileStatRow({required this.label, required this.value});
+  const _ProfileStatRow({
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -363,7 +440,10 @@ class _ProfileStatRow extends StatelessWidget {
         Expanded(
           child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
         ),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w700)),
+        Text(
+          value,
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
       ],
     );
   }
@@ -398,9 +478,15 @@ class _PreferenceRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+              Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: 2),
-              Text(value, style: Theme.of(context).textTheme.bodyMedium),
+              Text(
+                value,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
             ],
           ),
         ),

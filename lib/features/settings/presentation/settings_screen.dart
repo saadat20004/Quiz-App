@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
+
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/theme/theme_controller.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
-import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/section_title.dart';
 import '../../../routes/app_routes.dart';
 import '../../../shared/widgets/user_sidebar.dart';
+import '../../../shared/widgets/user_top_bar.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool _quizReminders = true;
+  bool _resultAlerts = true;
+  bool _marketingEmails = false;
 
   @override
   Widget build(BuildContext context) {
@@ -22,17 +32,7 @@ class SettingsScreen extends StatelessWidget {
         height: double.infinity,
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkBackground : AppColors.lightBackground,
-          gradient: isDark
-              ? AppColors.darkBackgroundGlow
-              : LinearGradient(
-                  colors: [
-                    Colors.white,
-                    AppColors.primary.withOpacity(0.04),
-                    AppColors.lightBackground,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+          gradient: isDark ? AppColors.darkBackgroundGlow : null,
         ),
         child: SafeArea(
           child: Row(
@@ -46,7 +46,9 @@ class SettingsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const _SettingsTopBar(),
+                      const UserTopBar(
+                        hintText: 'Search settings...',
+                      ),
                       const SizedBox(height: AppSizes.xl),
                       const SectionTitle(
                         title: 'Settings',
@@ -67,23 +69,48 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildSettingsContent(BuildContext context) {
-    return const Row(
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           flex: 3,
           child: Column(
             children: [
-              _AppearanceCard(),
-              SizedBox(height: AppSizes.lg),
-              _NotificationsCard(),
-              SizedBox(height: AppSizes.lg),
-              _LanguageCard(),
+              _AppearanceCard(
+                onToggleTheme: () {
+                  setState(() {
+                    appThemeController.toggleTheme();
+                  });
+                },
+              ),
+              const SizedBox(height: AppSizes.lg),
+              _NotificationsCard(
+                quizReminders: _quizReminders,
+                resultAlerts: _resultAlerts,
+                marketingEmails: _marketingEmails,
+                onQuizRemindersChanged: (value) {
+                  setState(() {
+                    _quizReminders = value;
+                  });
+                },
+                onResultAlertsChanged: (value) {
+                  setState(() {
+                    _resultAlerts = value;
+                  });
+                },
+                onMarketingEmailsChanged: (value) {
+                  setState(() {
+                    _marketingEmails = value;
+                  });
+                },
+              ),
+              const SizedBox(height: AppSizes.lg),
+              const _LanguageCard(),
             ],
           ),
         ),
-        SizedBox(width: AppSizes.lg),
-        Expanded(
+        const SizedBox(width: AppSizes.lg),
+        const Expanded(
           flex: 2,
           child: Column(
             children: [
@@ -98,50 +125,12 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
-class _SettingsTopBar extends StatelessWidget {
-  const _SettingsTopBar();
-
-  @override
-  Widget build(BuildContext context) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Row(
-      children: [
-        const Expanded(
-          child: AppTextField(
-            hintText: 'Search settings...',
-            prefixIcon: Icons.search,
-          ),
-        ),
-        const SizedBox(width: AppSizes.md),
-        Container(
-          decoration: BoxDecoration(
-            color: isDark
-                ? AppColors.darkCard.withOpacity(0.7)
-                : Colors.white.withOpacity(0.95),
-            border: Border.all(
-              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-            ),
-            borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-          ),
-          child: IconButton(
-            tooltip: isDark ? 'Switch to light mode' : 'Switch to dark mode',
-            onPressed: () {
-              appThemeController.toggleTheme();
-            },
-            icon: Icon(
-              isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-              color: AppColors.primary,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _AppearanceCard extends StatelessWidget {
-  const _AppearanceCard();
+  final VoidCallback onToggleTheme;
+
+  const _AppearanceCard({
+    required this.onToggleTheme,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -156,27 +145,20 @@ class _AppearanceCard extends StatelessWidget {
             subtitle: 'Customize how the app looks',
           ),
           const SizedBox(height: AppSizes.lg),
-          _SettingRow(
+          _SettingSwitchRow(
             icon: Icons.palette_outlined,
             title: 'Theme Mode',
             subtitle: isDark ? 'Dark mode is active' : 'Light mode is active',
-            trailing: Switch(
-              value: isDark,
-              onChanged: (_) {
-                appThemeController.toggleTheme();
-              },
-              activeColor: AppColors.primary,
-            ),
+            value: isDark,
+            onChanged: (_) => onToggleTheme(),
           ),
           const SizedBox(height: AppSizes.md),
-          const _SettingRow(
+          const _StaticSettingRow(
             icon: Icons.blur_on_outlined,
             title: 'Modern Effects',
             subtitle: 'Glass and gradient UI styling enabled',
-            trailing: Icon(
-              Icons.check_circle,
-              color: AppColors.success,
-            ),
+            trailingIcon: Icons.check_circle,
+            trailingColor: AppColors.success,
           ),
         ],
       ),
@@ -185,39 +167,55 @@ class _AppearanceCard extends StatelessWidget {
 }
 
 class _NotificationsCard extends StatelessWidget {
-  const _NotificationsCard();
+  final bool quizReminders;
+  final bool resultAlerts;
+  final bool marketingEmails;
+  final ValueChanged<bool> onQuizRemindersChanged;
+  final ValueChanged<bool> onResultAlertsChanged;
+  final ValueChanged<bool> onMarketingEmailsChanged;
+
+  const _NotificationsCard({
+    required this.quizReminders,
+    required this.resultAlerts,
+    required this.marketingEmails,
+    required this.onQuizRemindersChanged,
+    required this.onResultAlertsChanged,
+    required this.onMarketingEmailsChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          SectionTitle(
+        children: [
+          const SectionTitle(
             title: 'Notifications',
             subtitle: 'Choose what you want to receive',
           ),
-          SizedBox(height: AppSizes.lg),
-          _SettingRow(
+          const SizedBox(height: AppSizes.lg),
+          _SettingSwitchRow(
             icon: Icons.notifications_none_outlined,
             title: 'Quiz Reminders',
             subtitle: 'Get notified before your scheduled quiz',
-            trailing: Icon(
-              Icons.toggle_on,
-              color: AppColors.primary,
-              size: 34,
-            ),
+            value: quizReminders,
+            onChanged: onQuizRemindersChanged,
           ),
-          SizedBox(height: AppSizes.md),
-          _SettingRow(
+          const SizedBox(height: AppSizes.md),
+          _SettingSwitchRow(
             icon: Icons.emoji_events_outlined,
             title: 'Result Alerts',
             subtitle: 'Receive alerts when results are ready',
-            trailing: Icon(
-              Icons.toggle_on,
-              color: AppColors.primary,
-              size: 34,
-            ),
+            value: resultAlerts,
+            onChanged: onResultAlertsChanged,
+          ),
+          const SizedBox(height: AppSizes.md),
+          _SettingSwitchRow(
+            icon: Icons.mail_outline,
+            title: 'Marketing Emails',
+            subtitle: 'Receive updates and promotional emails',
+            value: marketingEmails,
+            onChanged: onMarketingEmailsChanged,
           ),
         ],
       ),
@@ -231,23 +229,21 @@ class _LanguageCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           SectionTitle(
             title: 'Language',
             subtitle: 'App language preferences',
           ),
           SizedBox(height: AppSizes.lg),
-          _SettingRow(
+          _StaticSettingRow(
             icon: Icons.language_outlined,
             title: 'Current Language',
             subtitle: 'English',
-            trailing: Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: AppColors.primary,
-            ),
+            trailingIcon: Icons.arrow_forward_ios,
+            trailingColor: AppColors.primary,
+            trailingSize: 16,
           ),
         ],
       ),
@@ -305,9 +301,9 @@ class _AppInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           SectionTitle(
             title: 'App Info',
             subtitle: 'Current application details',
@@ -324,17 +320,19 @@ class _AppInfoCard extends StatelessWidget {
   }
 }
 
-class _SettingRow extends StatelessWidget {
+class _SettingSwitchRow extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final Widget trailing;
+  final bool value;
+  final ValueChanged<bool> onChanged;
 
-  const _SettingRow({
+  const _SettingSwitchRow({
     required this.icon,
     required this.title,
     required this.subtitle,
-    required this.trailing,
+    required this.value,
+    required this.onChanged,
   });
 
   @override
@@ -373,7 +371,74 @@ class _SettingRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: AppSizes.md),
-        trailing,
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeColor: AppColors.primary,
+        ),
+      ],
+    );
+  }
+}
+
+class _StaticSettingRow extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final IconData trailingIcon;
+  final Color trailingColor;
+  final double trailingSize;
+
+  const _StaticSettingRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.trailingIcon,
+    required this.trailingColor,
+    this.trailingSize = 22,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+          ),
+          child: Icon(
+            icon,
+            color: AppColors.primary,
+          ),
+        ),
+        const SizedBox(width: AppSizes.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: AppSizes.md),
+        Icon(
+          trailingIcon,
+          color: trailingColor,
+          size: trailingSize,
+        ),
       ],
     );
   }
