@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
-import '../../core/widgets/app_text_field.dart';
 import '../../routes/app_routes.dart';
 
 class AdminSidebar extends StatelessWidget {
@@ -28,26 +28,12 @@ class AdminSidebar extends StatelessWidget {
             color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
           ),
         ),
-        boxShadow: isDark
-            ? null
-            : [
-                BoxShadow(
-                  color: AppColors.primary.withOpacity(0.04),
-                  blurRadius: 18,
-                  offset: const Offset(6, 0),
-                ),
-              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: AppSizes.md),
           const _AdminBrandHeader(),
-          const SizedBox(height: AppSizes.xl),
-          const AppTextField(
-            hintText: 'Search admin',
-            prefixIcon: Icons.search,
-          ),
           const SizedBox(height: AppSizes.xl),
           _AdminNavItem(
             icon: Icons.grid_view_rounded,
@@ -81,10 +67,11 @@ class AdminSidebar extends StatelessWidget {
           ),
           const Spacer(),
           _AdminNavItem(
-            icon: Icons.settings_outlined,
-            title: 'Back to User App',
-            routeName: AppRoutes.dashboard,
+            icon: Icons.logout,
+            title: 'Logout',
+            routeName: AppRoutes.login,
             selectedRoute: selectedRoute,
+            isLogout: true,
           ),
         ],
       ),
@@ -126,18 +113,20 @@ class _AdminNavItem extends StatelessWidget {
   final String title;
   final String routeName;
   final String selectedRoute;
+  final bool isLogout;
 
   const _AdminNavItem({
     required this.icon,
     required this.title,
     required this.routeName,
     required this.selectedRoute,
+    this.isLogout = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final bool isSelected = selectedRoute == routeName;
+    final bool isSelected = selectedRoute == routeName && !isLogout;
 
     final child = Container(
       margin: const EdgeInsets.only(bottom: AppSizes.sm),
@@ -179,9 +168,19 @@ class _AdminNavItem extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
+        if (isLogout) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            AppRoutes.login,
+            (route) => false,
+          );
+          return;
+        }
+
         if (ModalRoute.of(context)?.settings.name == routeName) {
           return;
         }
+
         Navigator.pushNamed(context, routeName);
       },
       child: child,

@@ -37,12 +37,15 @@ class AdminDashboardScreen extends StatelessWidget {
         child: SafeArea(
           child: Row(
             children: [
-              const AdminSidebar(
-                selectedRoute: AppRoutes.adminDashboard,
-              ),
+              const AdminSidebar(selectedRoute: AppRoutes.adminDashboard),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSizes.lg),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSizes.lg,
+                    AppSizes.md,
+                    AppSizes.lg,
+                    AppSizes.lg,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -69,12 +72,9 @@ class AdminDashboardScreen extends StatelessWidget {
                             'Manage quizzes, users, content, and analytics.',
                       ),
                       const SizedBox(height: AppSizes.lg),
-                      const Wrap(
-                        spacing: AppSizes.md,
-                        runSpacing: AppSizes.md,
-                        children: [
-                          SizedBox(
-                            width: 250,
+                      const Row(
+                        children: const [
+                          Expanded(
                             child: StatCard(
                               title: 'Total Quizzes',
                               value: '48',
@@ -84,8 +84,8 @@ class AdminDashboardScreen extends StatelessWidget {
                               isPositive: true,
                             ),
                           ),
-                          SizedBox(
-                            width: 250,
+                          SizedBox(width: AppSizes.md),
+                          Expanded(
                             child: StatCard(
                               title: 'Questions Bank',
                               value: '320',
@@ -95,8 +95,8 @@ class AdminDashboardScreen extends StatelessWidget {
                               isPositive: true,
                             ),
                           ),
-                          SizedBox(
-                            width: 250,
+                          SizedBox(width: AppSizes.md),
+                          Expanded(
                             child: StatCard(
                               title: 'Registered Users',
                               value: '1,284',
@@ -106,8 +106,8 @@ class AdminDashboardScreen extends StatelessWidget {
                               isPositive: true,
                             ),
                           ),
-                          SizedBox(
-                            width: 250,
+                          SizedBox(width: AppSizes.md),
+                          Expanded(
                             child: StatCard(
                               title: 'Avg. Completion',
                               value: '86%',

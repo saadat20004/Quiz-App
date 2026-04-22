@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
+import '../../../core/utils/report_export_helper.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/app_button.dart';
@@ -10,6 +12,35 @@ import '../../../shared/widgets/admin_top_bar.dart';
 
 class ReportsScreen extends StatelessWidget {
   const ReportsScreen({super.key});
+
+  /// ✅ Export dialog (moved OUTSIDE build)
+  void _showExportDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Export Reports'),
+        content: const Text('Choose a format for report export.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await ReportExportHelper.exportPdf();
+            },
+            child: const Text('PDF'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await ReportExportHelper.exportExcel();
+            },
+            child: const Text('Excel'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,15 +57,20 @@ class ReportsScreen extends StatelessWidget {
         child: SafeArea(
           child: Row(
             children: [
-              const AdminSidebar(
-                selectedRoute: AppRoutes.reports,
-              ),
+              const AdminSidebar(selectedRoute: AppRoutes.reports),
+
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSizes.lg),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSizes.lg,
+                    AppSizes.md,
+                    AppSizes.lg,
+                    AppSizes.lg,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      /// TOP BAR
                       AdminTopBar(
                         hintText: 'Search reports...',
                         actions: [
@@ -42,56 +78,64 @@ class ReportsScreen extends StatelessWidget {
                             text: 'Export',
                             icon: Icons.download_outlined,
                             isFullWidth: false,
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Export reports will be connected next',
-                                  ),
-                                ),
-                              );
-                            },
+                            onPressed: () => _showExportDialog(context),
                           ),
                         ],
                       ),
-                      const SizedBox(height: AppSizes.xl),
+
+                      const SizedBox(height: AppSizes.lg),
+
                       const SectionTitle(
                         title: 'Reports & Analytics',
                         subtitle:
                             'Track quiz performance, user activity, and engagement insights.',
                       ),
+
                       const SizedBox(height: AppSizes.lg),
-                      const Wrap(
-                        spacing: AppSizes.md,
-                        runSpacing: AppSizes.md,
-                        children: [
-                          _ReportSummaryCard(
-                            title: 'Total Attempts',
-                            value: '9,620',
-                            icon: Icons.play_circle_outline,
-                            iconColor: AppColors.primary,
+
+                      /// ✅ FULL WIDTH STATS
+                      Row(
+                        children: const [
+                          Expanded(
+                            child: _ReportSummaryCard(
+                              title: 'Total Attempts',
+                              value: '9,620',
+                              icon: Icons.play_circle_outline,
+                              iconColor: AppColors.primary,
+                            ),
                           ),
-                          _ReportSummaryCard(
-                            title: 'Average Score',
-                            value: '86%',
-                            icon: Icons.auto_graph_outlined,
-                            iconColor: AppColors.success,
+                          SizedBox(width: AppSizes.md),
+                          Expanded(
+                            child: _ReportSummaryCard(
+                              title: 'Average Score',
+                              value: '86%',
+                              icon: Icons.auto_graph_outlined,
+                              iconColor: AppColors.success,
+                            ),
                           ),
-                          _ReportSummaryCard(
-                            title: 'Completion Rate',
-                            value: '91%',
-                            icon: Icons.check_circle_outline,
-                            iconColor: AppColors.info,
+                          SizedBox(width: AppSizes.md),
+                          Expanded(
+                            child: _ReportSummaryCard(
+                              title: 'Completion Rate',
+                              value: '91%',
+                              icon: Icons.check_circle_outline,
+                              iconColor: AppColors.info,
+                            ),
                           ),
-                          _ReportSummaryCard(
-                            title: 'Active Participants',
-                            value: '1,284',
-                            icon: Icons.people_outline,
-                            iconColor: AppColors.warning,
+                          SizedBox(width: AppSizes.md),
+                          Expanded(
+                            child: _ReportSummaryCard(
+                              title: 'Active Participants',
+                              value: '1,284',
+                              icon: Icons.people_outline,
+                              iconColor: AppColors.warning,
+                            ),
                           ),
                         ],
                       ),
+
                       const SizedBox(height: AppSizes.lg),
+
                       _buildMainGrid(context),
                     ],
                   ),
@@ -104,70 +148,33 @@ class ReportsScreen extends StatelessWidget {
     );
   }
 
+  /// =========================
+  /// MAIN GRID
+  /// =========================
   Widget _buildMainGrid(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        /// LEFT SIDE
         Expanded(
           flex: 3,
           child: Column(
             children: [
+              /// ✅ CHART FIXED
               AppCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SectionTitle(
+                  children: const [
+                    SectionTitle(
                       title: 'Performance Overview',
-                      subtitle:
-                          'Charts area for attempts, scores, and participation.',
+                      subtitle: 'Quiz attempts over time',
                     ),
-                    const SizedBox(height: AppSizes.lg),
-                    Container(
-                      height: 260,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-                        border: Border.all(
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.darkBorder
-                              : AppColors.lightBorder,
-                        ),
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.primary.withOpacity(0.10),
-                            Colors.transparent,
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                      ),
-                      child: const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.insights_outlined,
-                              color: AppColors.primary,
-                              size: 42,
-                            ),
-                            SizedBox(height: AppSizes.sm),
-                            Text(
-                              'Charts area',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              'Graphs and analytics widgets come next',
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    SizedBox(height: AppSizes.lg),
+                    _SimpleBarChart(),
                   ],
                 ),
               ),
+
               const SizedBox(height: AppSizes.lg),
               const _QuizPerformanceCard(),
               const SizedBox(height: AppSizes.lg),
@@ -175,16 +182,85 @@ class ReportsScreen extends StatelessWidget {
             ],
           ),
         ),
+
         const SizedBox(width: AppSizes.lg),
-        const Expanded(
+
+        /// RIGHT SIDE
+        Expanded(
           flex: 2,
           child: Column(
             children: [
-              _LeaderboardCard(),
-              SizedBox(height: AppSizes.lg),
-              _ExportOptionsCard(),
+              const _LeaderboardCard(),
+              const SizedBox(height: AppSizes.lg),
+
+              /// ✅ EXPORT CARD CONNECTED
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SectionTitle(
+                      title: 'Export Options',
+                      subtitle: 'Download reports',
+                    ),
+                    const SizedBox(height: AppSizes.lg),
+
+                    AppButton(
+                      text: 'Export as PDF',
+                      icon: Icons.picture_as_pdf_outlined,
+                      onPressed: () => _showExportDialog(context),
+                    ),
+
+                    const SizedBox(height: AppSizes.md),
+
+                    AppButton(
+                      text: 'Export as Excel',
+                      icon: Icons.table_chart_outlined,
+                      isOutlined: true,
+                      onPressed: () => _showExportDialog(context),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SimpleBarChart extends StatelessWidget {
+  const _SimpleBarChart();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 260,
+      child: BarChart(
+        BarChartData(
+          alignment: BarChartAlignment.spaceAround,
+          titlesData: FlTitlesData(show: false),
+          borderData: FlBorderData(show: false),
+          barGroups: [
+            _bar(0, 8),
+            _bar(1, 12),
+            _bar(2, 10),
+            _bar(3, 15),
+            _bar(4, 9),
+          ],
+        ),
+      ),
+    );
+  }
+
+  BarChartGroupData _bar(int x, double y) {
+    return BarChartGroupData(
+      x: x,
+      barRods: [
+        BarChartRodData(
+          toY: y,
+          width: 18,
+          borderRadius: BorderRadius.circular(6),
         ),
       ],
     );
@@ -207,7 +283,6 @@ class _ReportSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      width: 250,
       child: Row(
         children: [
           Container(
@@ -311,21 +386,21 @@ class _UserPerformanceCard extends StatelessWidget {
           ),
           SizedBox(height: AppSizes.md),
           _UserReportRow(
-            name: 'Ava Johnson',
+            name: 'Ayesha Noor',
             attempts: '12',
             avgScore: '96%',
             status: 'Active',
           ),
           Divider(height: 24),
           _UserReportRow(
-            name: 'Michael Lee',
+            name: 'Muhammad Bilal',
             attempts: '9',
             avgScore: '88%',
             status: 'Active',
           ),
           Divider(height: 24),
           _UserReportRow(
-            name: 'Asim Hafeez',
+            name: 'Saadat Sohail',
             attempts: '7',
             avgScore: '84%',
             status: 'Active',
@@ -345,18 +420,15 @@ class _LeaderboardCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: const [
-          SectionTitle(
-            title: 'Leaderboard',
-            subtitle: 'Highest performers',
-          ),
+          SectionTitle(title: 'Leaderboard', subtitle: 'Highest performers'),
           SizedBox(height: AppSizes.lg),
-          _LeaderboardRow(rank: 1, name: 'Ava Johnson', score: '980'),
+          _LeaderboardRow(rank: 1, name: 'Ayesha Noor', score: '980'),
           Divider(height: 24),
-          _LeaderboardRow(rank: 2, name: 'Michael Lee', score: '945'),
+          _LeaderboardRow(rank: 2, name: 'Muhammad Bilal', score: '945'),
           Divider(height: 24),
           _LeaderboardRow(rank: 3, name: 'Sophia Ahmed', score: '920'),
           Divider(height: 24),
-          _LeaderboardRow(rank: 4, name: 'Asim Hafeez', score: '890'),
+          _LeaderboardRow(rank: 4, name: 'Saadat Sohail', score: '890'),
         ],
       ),
     );
@@ -422,9 +494,9 @@ class _ReportTableHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = Theme.of(context).textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.w700,
-        );
+    final style = Theme.of(
+      context,
+    ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700);
 
     return Row(
       children: [
@@ -467,9 +539,7 @@ class _QuizReportRow extends StatelessWidget {
           child: Text(
             status,
             style: TextStyle(
-              color: status == 'Active'
-                  ? AppColors.success
-                  : AppColors.warning,
+              color: status == 'Active' ? AppColors.success : AppColors.warning,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -509,9 +579,7 @@ class _UserReportRow extends StatelessWidget {
           child: Text(
             status,
             style: TextStyle(
-              color: status == 'Active'
-                  ? AppColors.success
-                  : AppColors.warning,
+              color: status == 'Active' ? AppColors.success : AppColors.warning,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -557,9 +625,7 @@ class _LeaderboardRow extends StatelessWidget {
         Expanded(
           child: Text(
             name,
-            style: const TextStyle(
-              fontWeight: FontWeight.w700,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.w700),
           ),
         ),
         Text(

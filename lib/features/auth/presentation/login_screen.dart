@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/constants/app_strings.dart';
@@ -17,8 +18,16 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _usernameController =
+      TextEditingController();
+  final TextEditingController _passwordController =
+      TextEditingController();
+
+  static const String _adminEmail = 'admin@example.com';
+  static const String _adminPassword = 'admin123';
+
+  static const String _userEmail = 'saadat@example.com';
+  static const String _userPassword = '123456';
 
   @override
   void dispose() {
@@ -29,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String? _validateUsername(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'Please enter email or mobile';
+      return 'Please enter email';
     }
     return null;
   }
@@ -42,21 +51,47 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _submitLogin() {
-    if (_formKey.currentState!.validate()) {
-      Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+    if (!_formKey.currentState!.validate()) return;
+
+    final username = _usernameController.text.trim().toLowerCase();
+    final password = _passwordController.text.trim();
+
+    if (username == _adminEmail && password == _adminPassword) {
+      Navigator.pushReplacementNamed(
+        context,
+        AppRoutes.adminDashboard,
+      );
+      return;
     }
+
+    if (username == _userEmail && password == _userPassword) {
+      Navigator.pushReplacementNamed(
+        context,
+        AppRoutes.dashboard,
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('The details you entered are incorrect'),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark =
+        Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
-          color: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+          color: isDark
+              ? AppColors.darkBackground
+              : AppColors.lightBackground,
           gradient: isDark ? AppColors.darkBackgroundGlow : null,
         ),
         child: SafeArea(
@@ -73,12 +108,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           ? AppColors.darkBorder
                           : AppColors.lightBorder,
                     ),
-                    borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+                    borderRadius:
+                        BorderRadius.circular(AppSizes.radiusLg),
                   ),
                   child: IconButton(
-                    tooltip: isDark
-                        ? 'Switch to light mode'
-                        : 'Switch to dark mode',
+                    tooltip:
+                        isDark ? 'Switch to light mode' : 'Switch to dark mode',
                     onPressed: () {
                       appThemeController.toggleTheme();
                     },
@@ -101,15 +136,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Form(
                         key: _formKey,
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
                           children: [
                             _buildHeader(context),
                             const SizedBox(height: AppSizes.xl),
                             AppTextField(
-                              hintText: 'Email or Mobile',
+                              hintText: 'Email',
                               prefixIcon: Icons.person_outline,
                               controller: _usernameController,
                               validator: _validateUsername,
+                              keyboardType:
+                                  TextInputType.emailAddress,
                             ),
                             const SizedBox(height: AppSizes.md),
                             AppTextField(
@@ -129,7 +167,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     AppRoutes.forgotPassword,
                                   );
                                 },
-                                child: const Text(AppStrings.forgotPassword),
+                                child: const Text(
+                                  AppStrings.forgotPassword,
+                                ),
                               ),
                             ),
                             const SizedBox(height: AppSizes.md),
@@ -137,25 +177,16 @@ class _LoginScreenState extends State<LoginScreen> {
                               text: AppStrings.login,
                               onPressed: _submitLogin,
                             ),
-                            const SizedBox(height: AppSizes.md),
-                            AppButton(
-                              text: 'Continue as Admin',
-                              icon: Icons.admin_panel_settings_outlined,
-                              isOutlined: true,
-                              onPressed: () {
-                                Navigator.pushReplacementNamed(
-                                  context,
-                                  AppRoutes.adminDashboard,
-                                );
-                              },
-                            ),
                             const SizedBox(height: AppSizes.lg),
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisAlignment:
+                                  MainAxisAlignment.center,
                               children: [
                                 Text(
                                   "Don’t have an account? ",
-                                  style: Theme.of(context).textTheme.bodyMedium,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium,
                                 ),
                                 GestureDetector(
                                   onTap: () {
@@ -173,6 +204,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 ),
                               ],
+                            ),
+                            const SizedBox(height: AppSizes.lg),
+                            const Text(
+                              'Demo Credentials',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Admin: admin@example.com / admin123',
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'User: saadat@example.com / 123456',
                             ),
                           ],
                         ),
@@ -197,12 +243,20 @@ class _LoginScreenState extends State<LoginScreen> {
           height: 64,
           decoration: BoxDecoration(
             gradient: AppColors.primaryGradient,
-            borderRadius: BorderRadius.circular(AppSizes.radiusXl),
+            borderRadius:
+                BorderRadius.circular(AppSizes.radiusXl),
           ),
-          child: const Icon(Icons.quiz_outlined, color: Colors.white, size: 32),
+          child: const Icon(
+            Icons.quiz_outlined,
+            color: Colors.white,
+            size: 32,
+          ),
         ),
         const SizedBox(height: AppSizes.md),
-        Text('Welcome Back', style: Theme.of(context).textTheme.headlineLarge),
+        Text(
+          'Welcome Back',
+          style: Theme.of(context).textTheme.headlineLarge,
+        ),
         const SizedBox(height: AppSizes.sm),
         Text(
           'Login to continue to your quiz dashboard',

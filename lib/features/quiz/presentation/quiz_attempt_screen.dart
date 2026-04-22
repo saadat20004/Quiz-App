@@ -9,7 +9,6 @@ import '../../../core/widgets/section_title.dart';
 import '../../../routes/app_routes.dart';
 import '../../../shared/widgets/user_sidebar.dart';
 import '../../../shared/widgets/user_top_bar.dart';
-
 import '../providers/quiz_provider.dart';
 
 class QuizAttemptScreen extends StatelessWidget {
@@ -18,11 +17,9 @@ class QuizAttemptScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
     final quizProvider = Provider.of<QuizProvider>(context);
     final quiz = quizProvider.selectedQuiz;
 
-    /// ✅ Auto-submit when time ends
     if (quizProvider.isTimeUp && quizProvider.hasQuiz) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushNamedAndRemoveUntil(
@@ -34,22 +31,17 @@ class QuizAttemptScreen extends StatelessWidget {
     }
 
     if (quiz == null) {
-      return const Scaffold(
-        body: Center(child: Text('No quiz selected')),
-      );
+      return const Scaffold(body: Center(child: Text('No quiz selected')));
     }
 
-    final question =
-        quiz.questions[quizProvider.currentQuestionIndex];
+    final question = quiz.questions[quizProvider.currentQuestionIndex];
 
     return Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
-          color: isDark
-              ? AppColors.darkBackground
-              : AppColors.lightBackground,
+          color: isDark ? AppColors.darkBackground : AppColors.lightBackground,
           gradient: isDark
               ? AppColors.darkBackgroundGlow
               : LinearGradient(
@@ -65,52 +57,60 @@ class QuizAttemptScreen extends StatelessWidget {
         child: SafeArea(
           child: Row(
             children: [
-              const UserSidebar(
-                selectedRoute: AppRoutes.quizList,
-              ),
-
-              /// ================= MAIN =================
+              const UserSidebar(selectedRoute: AppRoutes.quizList),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSizes.lg),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSizes.lg,
+                    AppSizes.md,
+                    AppSizes.lg,
+                    AppSizes.lg,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const UserTopBar(
-                        hintText: 'Quiz in progress...',
-                      ),
-
-                      const SizedBox(height: AppSizes.xl),
-
-                      /// HEADER
-                      Row(
+                      const Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          IconButton(
-                            onPressed: () => Navigator.pop(context),
-                            icon: const Icon(Icons.arrow_back_ios_new),
+                          Expanded(
+                            child: UserTopBar(hintText: 'Quiz in progress...'),
                           ),
-                          const SizedBox(width: AppSizes.sm),
+                        ],
+                      ),
+                      const SizedBox(height: AppSizes.xl),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: isDark
+                                    ? AppColors.darkBorder
+                                    : AppColors.lightBorder,
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                AppSizes.radiusLg,
+                              ),
+                            ),
+                            child: IconButton(
+                              onPressed: () => Navigator.pop(context),
+                              icon: const Icon(Icons.arrow_back_ios_new),
+                            ),
+                          ),
+                          const SizedBox(width: AppSizes.md),
                           Expanded(
                             child: SectionTitle(
                               title: quiz.title,
                               subtitle:
-                                  'Answer carefully before moving forward',
+                                  'Answer carefully and complete all questions',
                             ),
                           ),
                         ],
                       ),
-
                       const SizedBox(height: AppSizes.lg),
-
                       _buildHeaderStats(quizProvider),
-
                       const SizedBox(height: AppSizes.lg),
-
-                      _buildMainArea(
-                        context,
-                        quizProvider,
-                        question,
-                      ),
+                      _buildMainArea(context, quizProvider, question),
                     ],
                   ),
                 ),
@@ -122,7 +122,6 @@ class QuizAttemptScreen extends StatelessWidget {
     );
   }
 
-  /// ================= HEADER STATS =================
   Widget _buildHeaderStats(QuizProvider quizProvider) {
     final quiz = quizProvider.selectedQuiz!;
 
@@ -140,25 +139,23 @@ class QuizAttemptScreen extends StatelessWidget {
         Expanded(
           child: _AttemptStatCard(
             title: 'Progress',
-            value:
-                '${(quizProvider.progress * 100).toInt()}%',
-            icon: Icons.auto_graph,
+            value: '${(quizProvider.progress * 100).toInt()}%',
+            icon: Icons.auto_graph_outlined,
           ),
         ),
         const SizedBox(width: AppSizes.md),
         Expanded(
           child: _AttemptStatCard(
             title: 'Time Left',
-            value: _formatTime(
-                quizProvider.remainingSeconds),
+            value: _formatTime(quizProvider.remainingSeconds),
             icon: Icons.timer_outlined,
+            isWarning: quizProvider.remainingSeconds <= 60,
           ),
         ),
       ],
     );
   }
 
-  /// ================= MAIN CONTENT =================
   Widget _buildMainArea(
     BuildContext context,
     QuizProvider quizProvider,
@@ -169,7 +166,6 @@ class QuizAttemptScreen extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        /// LEFT SIDE
         Expanded(
           flex: 3,
           child: Column(
@@ -190,24 +186,20 @@ class QuizAttemptScreen extends StatelessWidget {
                     Text(
                       question.questionText,
                       style: const TextStyle(
-                        fontSize: 22,
+                        fontSize: 24,
                         fontWeight: FontWeight.w800,
                         height: 1.4,
                       ),
                     ),
-                    const SizedBox(height: AppSizes.lg),
-
-                    /// OPTIONS
-                    ...List.generate(question.options.length,
-                        (index) {
+                    const SizedBox(height: AppSizes.xl),
+                    ...List.generate(question.options.length, (index) {
                       final labels = ['A', 'B', 'C', 'D'];
                       final isSelected =
                           quizProvider.selectedAnswerForCurrentQuestion ==
-                              index;
+                          index;
 
                       return Padding(
-                        padding: const EdgeInsets.only(
-                            bottom: AppSizes.md),
+                        padding: const EdgeInsets.only(bottom: AppSizes.md),
                         child: _OptionTile(
                           label: labels[index],
                           text: question.options[index],
@@ -221,10 +213,7 @@ class QuizAttemptScreen extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: AppSizes.lg),
-
-              /// NAVIGATION
               AppCard(
                 child: Row(
                   children: [
@@ -247,8 +236,7 @@ class QuizAttemptScreen extends StatelessWidget {
                             : 'Next Question',
                         onPressed: () {
                           if (quizProvider.isLastQuestion) {
-                            Navigator.pushNamed(
-                                context, AppRoutes.result);
+                            Navigator.pushNamed(context, AppRoutes.result);
                           } else {
                             quizProvider.nextQuestion();
                           }
@@ -261,91 +249,105 @@ class QuizAttemptScreen extends StatelessWidget {
             ],
           ),
         ),
-
         const SizedBox(width: AppSizes.lg),
-
-        /// RIGHT SIDE
         Expanded(
           flex: 2,
-          child: AppCard(
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                const SectionTitle(
-                  title: 'Progress',
-                  subtitle: 'Track your answers',
-                ),
-                const SizedBox(height: AppSizes.lg),
-
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: LinearProgressIndicator(
-                    value: quizProvider.progress,
-                    minHeight: 10,
-                    valueColor:
-                        const AlwaysStoppedAnimation(
-                            AppColors.primary),
-                  ),
-                ),
-
-                const SizedBox(height: AppSizes.sm),
-
-                Text(
-                  '${(quizProvider.progress * 100).toInt()}% completed',
-                ),
-
-                const SizedBox(height: AppSizes.lg),
-
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: List.generate(
-                    quiz.totalQuestions,
-                    (index) {
-                      final isCurrent =
-                          index ==
-                              quizProvider
-                                  .currentQuestionIndex;
-
-                      final isAnswered =
-                          quizProvider.selectedAnswers
-                              .containsKey(index);
-
-                      Color color;
-
-                      if (isCurrent) {
-                        color = AppColors.warning;
-                      } else if (isAnswered) {
-                        color = AppColors.primary;
-                      } else {
-                        color = Colors.grey;
-                      }
-
-                      return Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: color.withOpacity(0.2),
-                          borderRadius:
-                              BorderRadius.circular(10),
+          child: Column(
+            children: [
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SectionTitle(
+                      title: 'Progress',
+                      subtitle: 'Track your answers',
+                    ),
+                    const SizedBox(height: AppSizes.lg),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: LinearProgressIndicator(
+                        value: quizProvider.progress,
+                        minHeight: 10,
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          AppColors.primary,
                         ),
-                        child: Center(
-                          child: Text('${index + 1}'),
-                        ),
-                      );
-                    },
-                  ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSizes.sm),
+                    Text('${(quizProvider.progress * 100).toInt()}% completed'),
+                    const SizedBox(height: AppSizes.lg),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: List.generate(quiz.totalQuestions, (index) {
+                        final isCurrent =
+                            index == quizProvider.currentQuestionIndex;
+                        final isAnswered = quizProvider.selectedAnswers
+                            .containsKey(index);
+
+                        Color color;
+                        if (isCurrent) {
+                          color = AppColors.warning;
+                        } else if (isAnswered) {
+                          color = AppColors.primary;
+                        } else {
+                          color = Colors.grey;
+                        }
+
+                        return Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: color.withOpacity(0.16),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${index + 1}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: AppSizes.lg),
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SectionTitle(
+                      title: 'Quiz Info',
+                      subtitle: 'Quick reference',
+                    ),
+                    const SizedBox(height: AppSizes.lg),
+                    _QuickInfoRow(label: 'Category', value: quiz.category),
+                    const SizedBox(height: AppSizes.md),
+                    _QuickInfoRow(label: 'Difficulty', value: quiz.difficulty),
+                    const SizedBox(height: AppSizes.md),
+                    _QuickInfoRow(
+                      label: 'Questions',
+                      value: '${quiz.totalQuestions}',
+                    ),
+                    const SizedBox(height: AppSizes.md),
+                    _QuickInfoRow(
+                      label: 'Duration',
+                      value: '${quiz.durationMinutes} min',
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ],
     );
   }
 
-  /// ================= TIME FORMAT =================
   String _formatTime(int seconds) {
     final minutes = seconds ~/ 60;
     final secs = seconds % 60;
@@ -357,7 +359,6 @@ class QuizAttemptScreen extends StatelessWidget {
   }
 }
 
-/// ================= OPTION TILE =================
 class _OptionTile extends StatelessWidget {
   final String label;
   final String text;
@@ -373,32 +374,33 @@ class _OptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.all(AppSizes.md),
         decoration: BoxDecoration(
-          gradient: selected
-              ? AppColors.primaryGradient
-              : null,
-          color: selected ? null : Colors.white,
-          borderRadius:
-              BorderRadius.circular(AppSizes.radiusLg),
+          gradient: selected ? AppColors.primaryGradient : null,
+          color: selected ? null : (isDark ? AppColors.darkCard : Colors.white),
+          borderRadius: BorderRadius.circular(AppSizes.radiusLg),
           border: Border.all(
             color: selected
                 ? Colors.transparent
-                : AppColors.lightBorder,
+                : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
           ),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 36,
-              height: 36,
+              width: 38,
+              height: 38,
               decoration: BoxDecoration(
                 color: selected
-                    ? Colors.white.withOpacity(0.2)
-                    : AppColors.primary.withOpacity(0.1),
+                    ? Colors.white.withOpacity(0.18)
+                    : AppColors.primary.withOpacity(0.10),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Center(
@@ -406,22 +408,26 @@ class _OptionTile extends StatelessWidget {
                   label,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: selected
-                        ? Colors.white
-                        : AppColors.primary,
+                    color: selected ? Colors.white : AppColors.primary,
                   ),
                 ),
               ),
             ),
             const SizedBox(width: AppSizes.md),
             Expanded(
-              child: Text(
-                text,
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: selected
-                      ? Colors.white
-                      : Colors.black,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  text,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: selected
+                        ? Colors.white
+                        : (isDark
+                              ? AppColors.darkTextPrimary
+                              : AppColors.lightTextPrimary),
+                    height: 1.5,
+                  ),
                 ),
               ),
             ),
@@ -432,39 +438,71 @@ class _OptionTile extends StatelessWidget {
   }
 }
 
-/// ================= STAT CARD =================
 class _AttemptStatCard extends StatelessWidget {
   final String title;
   final String value;
   final IconData icon;
+  final bool isWarning;
 
   const _AttemptStatCard({
     required this.title,
     required this.value,
     required this.icon,
+    this.isWarning = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final Color iconColor = isWarning ? AppColors.warning : AppColors.primary;
+
     return AppCard(
       child: Row(
         children: [
-          Icon(icon, color: AppColors.primary),
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.14),
+              borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+            ),
+            child: Icon(icon, color: iconColor),
+          ),
           const SizedBox(width: AppSizes.sm),
-          Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
-            children: [
-              Text(title),
-              Text(
-                value,
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold),
-              ),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _QuickInfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _QuickInfoRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: Text(label)),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.w700)),
+      ],
     );
   }
 }

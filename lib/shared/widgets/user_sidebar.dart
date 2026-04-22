@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
-import '../../core/widgets/app_text_field.dart';
 import '../../routes/app_routes.dart';
 
 class UserSidebar extends StatelessWidget {
   final String selectedRoute;
 
-  const UserSidebar({super.key, required this.selectedRoute});
+  const UserSidebar({
+    super.key,
+    required this.selectedRoute,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       width: 250,
@@ -25,15 +28,6 @@ class UserSidebar extends StatelessWidget {
             color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
           ),
         ),
-        boxShadow: isDark
-            ? null
-            : [
-                BoxShadow(
-                  color: AppColors.primary.withOpacity(0.04),
-                  blurRadius: 18,
-                  offset: const Offset(6, 0),
-                ),
-              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,38 +35,43 @@ class UserSidebar extends StatelessWidget {
           const SizedBox(height: AppSizes.md),
           const _BrandHeader(),
           const SizedBox(height: AppSizes.xl),
-          const AppTextField(hintText: 'Search', prefixIcon: Icons.search),
-          const SizedBox(height: AppSizes.xl),
-          _SidebarNavItem(
-            icon: Icons.grid_view_rounded,
+          _UserNavItem(
+            icon: Icons.dashboard_outlined,
             title: 'Dashboard',
             routeName: AppRoutes.dashboard,
             selectedRoute: selectedRoute,
           ),
-          _SidebarNavItem(
+          _UserNavItem(
             icon: Icons.quiz_outlined,
-            title: 'Quizzes',
+            title: 'Quiz List',
             routeName: AppRoutes.quizList,
             selectedRoute: selectedRoute,
           ),
-          _SidebarNavItem(
-            icon: Icons.history_outlined,
+          _UserNavItem(
+            icon: Icons.history,
             title: 'History',
             routeName: AppRoutes.history,
             selectedRoute: selectedRoute,
           ),
-          _SidebarNavItem(
+          _UserNavItem(
             icon: Icons.person_outline,
             title: 'Profile',
             routeName: AppRoutes.profile,
             selectedRoute: selectedRoute,
           ),
-          const Spacer(),
-          _SidebarNavItem(
+          _UserNavItem(
             icon: Icons.settings_outlined,
             title: 'Settings',
             routeName: AppRoutes.settings,
             selectedRoute: selectedRoute,
+          ),
+          const Spacer(),
+          _UserNavItem(
+            icon: Icons.logout,
+            title: 'Logout',
+            routeName: AppRoutes.login,
+            selectedRoute: selectedRoute,
+            isLogout: true,
           ),
         ],
       ),
@@ -94,37 +93,40 @@ class _BrandHeader extends StatelessWidget {
             gradient: AppColors.primaryGradient,
             borderRadius: BorderRadius.circular(AppSizes.radiusMd),
           ),
-          child: const Icon(Icons.quiz, color: Colors.white),
+          child: const Icon(Icons.quiz_outlined, color: Colors.white),
         ),
         const SizedBox(width: AppSizes.sm),
         const Text(
           'Quizzy',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ],
     );
   }
 }
 
-class _SidebarNavItem extends StatelessWidget {
+class _UserNavItem extends StatelessWidget {
   final IconData icon;
   final String title;
   final String routeName;
   final String selectedRoute;
-  final bool enabled;
+  final bool isLogout;
 
-  const _SidebarNavItem({
+  const _UserNavItem({
     required this.icon,
     required this.title,
     required this.routeName,
     required this.selectedRoute,
-    this.enabled = true,
+    this.isLogout = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isSelected = selectedRoute == routeName;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final bool isSelected = selectedRoute == routeName && !isLogout;
 
     final child = Container(
       margin: const EdgeInsets.only(bottom: AppSizes.sm),
@@ -143,31 +145,38 @@ class _SidebarNavItem extends StatelessWidget {
             color: isSelected
                 ? Colors.white
                 : (isDark
-                      ? AppColors.darkTextSecondary
-                      : AppColors.lightTextSecondary),
+                    ? AppColors.darkTextSecondary
+                    : AppColors.lightTextSecondary),
           ),
           const SizedBox(width: AppSizes.md),
-          Text(
-            title,
-            style: TextStyle(
-              color: isSelected
-                  ? Colors.white
-                  : (isDark
+          Expanded(
+            child: Text(
+              title,
+              style: TextStyle(
+                color: isSelected
+                    ? Colors.white
+                    : (isDark
                         ? AppColors.darkTextSecondary
                         : AppColors.lightTextSecondary),
-              fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
       ),
     );
 
-    if (!enabled || routeName.isEmpty) {
-      return Opacity(opacity: 0.8, child: child);
-    }
-
     return GestureDetector(
       onTap: () {
+        if (isLogout) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            AppRoutes.login,
+            (route) => false,
+          );
+          return;
+        }
+
         if (ModalRoute.of(context)?.settings.name == routeName) {
           return;
         }

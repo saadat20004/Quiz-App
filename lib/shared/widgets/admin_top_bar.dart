@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
 import '../../core/theme/theme_controller.dart';
@@ -23,6 +24,7 @@ class AdminTopBar extends StatelessWidget {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
           child: TextField(
@@ -36,9 +38,11 @@ class AdminTopBar extends StatelessWidget {
         ),
         const SizedBox(width: AppSizes.md),
         Container(
+          width: 52,
+          height: 52,
           decoration: BoxDecoration(
             color: isDark
-                ? AppColors.darkCard.withOpacity(0.7)
+                ? AppColors.darkCard.withOpacity(0.75)
                 : Colors.white.withOpacity(0.95),
             border: Border.all(
               color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
@@ -57,7 +61,7 @@ class AdminTopBar extends StatelessWidget {
           ),
         ),
         if (actions != null && actions!.isNotEmpty) ...[
-          const SizedBox(width: AppSizes.sm),
+          const SizedBox(width: AppSizes.md),
           ..._withSpacing(actions!),
         ],
       ],

@@ -21,14 +21,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final GlobalKey<FormState> _profileFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _passwordFormKey = GlobalKey<FormState>();
 
-  final TextEditingController _fullNameController =
-      TextEditingController(text: 'Asim Hafeez');
-  final TextEditingController _emailController =
-      TextEditingController(text: 'asim@example.com');
-  final TextEditingController _mobileController =
-      TextEditingController(text: '03001234567');
-  final TextEditingController _usernameController =
-      TextEditingController(text: 'asimhafeez');
+  final TextEditingController _fullNameController = TextEditingController(
+    text: 'Saadat Sohail',
+  );
+  final TextEditingController _emailController = TextEditingController(
+    text: 'saadat@example.com',
+  );
+  final TextEditingController _mobileController = TextEditingController(
+    text: '03001234567',
+  );
+  final TextEditingController _usernameController = TextEditingController(
+    text: 'saadatsohail',
+  );
 
   final TextEditingController _currentPasswordController =
       TextEditingController();
@@ -101,9 +105,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _saveProfile() {
     if (_profileFormKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profile updated successfully'),
-        ),
+        const SnackBar(content: Text('Profile updated successfully')),
       );
     }
   }
@@ -111,9 +113,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _updatePassword() {
     if (_passwordFormKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password updated successfully'),
-        ),
+        const SnackBar(content: Text('Password updated successfully')),
       );
       _currentPasswordController.clear();
       _newPasswordController.clear();
@@ -132,22 +132,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
         height: double.infinity,
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkBackground : AppColors.lightBackground,
-          gradient: isDark ? AppColors.darkBackgroundGlow : null,
+          gradient: isDark
+              ? AppColors.darkBackgroundGlow
+              : LinearGradient(
+                  colors: [
+                    Colors.white,
+                    AppColors.primary.withOpacity(0.04),
+                    AppColors.lightBackground,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
         ),
         child: SafeArea(
           child: Row(
             children: [
-              const UserSidebar(
-                selectedRoute: AppRoutes.profile,
-              ),
+              const UserSidebar(selectedRoute: AppRoutes.profile),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSizes.lg),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSizes.lg,
+                    AppSizes.md,
+                    AppSizes.lg,
+                    AppSizes.lg,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const UserTopBar(
-                        hintText: 'Search settings or profile fields...',
+                      const Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: UserTopBar(
+                              hintText: 'Search settings or profile fields...',
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: AppSizes.xl),
                       const SectionTitle(
@@ -158,32 +178,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: AppSizes.lg),
                       _buildProfileHeader(),
                       const SizedBox(height: AppSizes.lg),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            flex: 3,
-                            child: Column(
-                              children: [
-                                _buildPersonalInfoCard(),
-                                const SizedBox(height: AppSizes.lg),
-                                _buildPasswordCard(),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: AppSizes.lg),
-                          const Expanded(
-                            flex: 2,
-                            child: Column(
-                              children: [
-                                _ProfileStatsCard(),
-                                SizedBox(height: AppSizes.lg),
-                                _PreferencesCard(),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                      _buildMainContent(),
                     ],
                   ),
                 ),
@@ -198,30 +193,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildProfileHeader() {
     return AppCard(
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            width: 96,
-            height: 96,
+            width: 104,
+            height: 104,
             decoration: BoxDecoration(
               gradient: AppColors.primaryGradient,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(28),
             ),
-            child: const Icon(
-              Icons.person,
-              size: 48,
-              color: Colors.white,
-            ),
+            child: const Icon(Icons.person, size: 52, color: Colors.white),
           ),
-          const SizedBox(width: AppSizes.lg),
+          const SizedBox(width: AppSizes.xl),
           const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Asim Hafeez',
+                  'Saadat Sohail',
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 30,
                     fontWeight: FontWeight.w800,
+                    height: 1.2,
                   ),
                 ),
                 SizedBox(height: AppSizes.xs),
@@ -229,32 +222,64 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   'Participant Account',
                   style: TextStyle(
                     color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 SizedBox(height: AppSizes.sm),
                 Text(
-                  'Manage your details, preferences, and password settings here.',
-                  style: TextStyle(fontSize: 15),
+                  'Manage your personal profile, password, and preferences from one place.',
+                  style: TextStyle(fontSize: 15, height: 1.6),
                 ),
               ],
             ),
           ),
           const SizedBox(width: AppSizes.md),
-          AppButton(
-            text: 'Upload Photo',
-            isFullWidth: false,
-            isOutlined: true,
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Photo upload will be connected later'),
-                ),
-              );
-            },
+          SizedBox(
+            width: 150,
+            child: AppButton(
+              text: 'Upload Photo',
+              isOutlined: true,
+              isFullWidth: false,
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Photo upload will be connected later'),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildMainContent() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 3,
+          child: Column(
+            children: [
+              _buildPersonalInfoCard(),
+              const SizedBox(height: AppSizes.lg),
+              _buildPasswordCard(),
+            ],
+          ),
+        ),
+        const SizedBox(width: AppSizes.lg),
+        const Expanded(
+          flex: 2,
+          child: Column(
+            children: [
+              _ProfileStatsCard(),
+              SizedBox(height: AppSizes.lg),
+              _PreferencesCard(),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -270,39 +295,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
               subtitle: 'Update your basic details',
             ),
             const SizedBox(height: AppSizes.lg),
-            AppTextField(
-              hintText: 'Full Name',
-              prefixIcon: Icons.person_outline,
-              controller: _fullNameController,
-              validator: (value) => _validateRequired(value, 'full name'),
+            Row(
+              children: [
+                Expanded(
+                  child: AppTextField(
+                    hintText: 'Full Name',
+                    prefixIcon: Icons.person_outline,
+                    controller: _fullNameController,
+                    validator: (value) => _validateRequired(value, 'full name'),
+                  ),
+                ),
+                const SizedBox(width: AppSizes.md),
+                Expanded(
+                  child: AppTextField(
+                    hintText: 'Username',
+                    prefixIcon: Icons.alternate_email,
+                    controller: _usernameController,
+                    validator: (value) => _validateRequired(value, 'username'),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: AppSizes.md),
-            AppTextField(
-              hintText: 'Email Address',
-              prefixIcon: Icons.email_outlined,
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress,
-              validator: _validateEmail,
-            ),
-            const SizedBox(height: AppSizes.md),
-            AppTextField(
-              hintText: 'Mobile Number',
-              prefixIcon: Icons.phone_outlined,
-              controller: _mobileController,
-              keyboardType: TextInputType.phone,
-              validator: _validateMobile,
-            ),
-            const SizedBox(height: AppSizes.md),
-            AppTextField(
-              hintText: 'Username',
-              prefixIcon: Icons.alternate_email,
-              controller: _usernameController,
-              validator: (value) => _validateRequired(value, 'username'),
+            Row(
+              children: [
+                Expanded(
+                  child: AppTextField(
+                    hintText: 'Email Address',
+                    prefixIcon: Icons.email_outlined,
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    validator: _validateEmail,
+                  ),
+                ),
+                const SizedBox(width: AppSizes.md),
+                Expanded(
+                  child: AppTextField(
+                    hintText: 'Mobile Number',
+                    prefixIcon: Icons.phone_outlined,
+                    controller: _mobileController,
+                    keyboardType: TextInputType.phone,
+                    validator: _validateMobile,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: AppSizes.lg),
-            AppButton(
-              text: 'Save Changes',
-              onPressed: _saveProfile,
+            Align(
+              alignment: Alignment.centerLeft,
+              child: SizedBox(
+                width: 180,
+                child: AppButton(text: 'Save Changes', onPressed: _saveProfile),
+              ),
             ),
           ],
         ),
@@ -327,29 +371,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
               prefixIcon: Icons.lock_outline,
               obscureText: true,
               controller: _currentPasswordController,
-              validator: (value) => _validateRequired(value, 'current password'),
+              validator: (value) =>
+                  _validateRequired(value, 'current password'),
             ),
             const SizedBox(height: AppSizes.md),
-            AppTextField(
-              hintText: 'New Password',
-              prefixIcon: Icons.lock_outline,
-              obscureText: true,
-              controller: _newPasswordController,
-              validator: _validateNewPassword,
-            ),
-            const SizedBox(height: AppSizes.md),
-            AppTextField(
-              hintText: 'Confirm New Password',
-              prefixIcon: Icons.lock_outline,
-              obscureText: true,
-              controller: _confirmPasswordController,
-              validator: _validateConfirmPassword,
+            Row(
+              children: [
+                Expanded(
+                  child: AppTextField(
+                    hintText: 'New Password',
+                    prefixIcon: Icons.lock_outline,
+                    obscureText: true,
+                    controller: _newPasswordController,
+                    validator: _validateNewPassword,
+                  ),
+                ),
+                const SizedBox(width: AppSizes.md),
+                Expanded(
+                  child: AppTextField(
+                    hintText: 'Confirm New Password',
+                    prefixIcon: Icons.lock_outline,
+                    obscureText: true,
+                    controller: _confirmPasswordController,
+                    validator: _validateConfirmPassword,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: AppSizes.lg),
-            AppButton(
-              text: 'Update Password',
-              isOutlined: true,
-              onPressed: _updatePassword,
+            Align(
+              alignment: Alignment.centerLeft,
+              child: SizedBox(
+                width: 200,
+                child: AppButton(
+                  text: 'Update Password',
+                  isOutlined: true,
+                  onPressed: _updatePassword,
+                ),
+              ),
             ),
           ],
         ),
@@ -398,7 +457,7 @@ class _PreferencesCard extends StatelessWidget {
         children: [
           SectionTitle(
             title: 'Preferences',
-            subtitle: 'Manage your interface settings',
+            subtitle: 'Quick view of your settings',
           ),
           SizedBox(height: AppSizes.lg),
           _PreferenceRow(
@@ -428,10 +487,7 @@ class _ProfileStatRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _ProfileStatRow({
-    required this.label,
-    required this.value,
-  });
+  const _ProfileStatRow({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -440,10 +496,7 @@ class _ProfileStatRow extends StatelessWidget {
         Expanded(
           child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
         ),
-        Text(
-          value,
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.w700)),
       ],
     );
   }
@@ -465,11 +518,11 @@ class _PreferenceRow extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 42,
-          height: 42,
+          width: 46,
+          height: 46,
           decoration: BoxDecoration(
             color: AppColors.primary.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppSizes.radiusMd),
           ),
           child: Icon(icon, color: AppColors.primary),
         ),
@@ -478,15 +531,9 @@ class _PreferenceRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: const TextStyle(fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 4),
+              Text(value, style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
         ),

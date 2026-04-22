@@ -32,31 +32,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
         height: double.infinity,
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkBackground : AppColors.lightBackground,
-          gradient: isDark ? AppColors.darkBackgroundGlow : null,
+          gradient: isDark
+              ? AppColors.darkBackgroundGlow
+              : LinearGradient(
+                  colors: [
+                    Colors.white,
+                    AppColors.primary.withOpacity(0.04),
+                    AppColors.lightBackground,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
         ),
         child: SafeArea(
           child: Row(
             children: [
-              const UserSidebar(
-                selectedRoute: AppRoutes.settings,
-              ),
+              const UserSidebar(selectedRoute: AppRoutes.settings),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSizes.lg),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSizes.lg,
+                    AppSizes.md,
+                    AppSizes.lg,
+                    AppSizes.lg,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const UserTopBar(
-                        hintText: 'Search settings...',
+                      const Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: UserTopBar(hintText: 'Search settings...'),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: AppSizes.xl),
                       const SectionTitle(
                         title: 'Settings',
                         subtitle:
-                            'Manage your preferences, notifications, theme, and account actions.',
+                            'Manage your appearance, notifications, preferences, and account actions.',
                       ),
                       const SizedBox(height: AppSizes.lg),
-                      _buildSettingsContent(context),
+                      _buildMainContent(context),
                     ],
                   ),
                 ),
@@ -68,7 +86,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildSettingsContent(BuildContext context) {
+  Widget _buildMainContent(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -128,9 +146,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 class _AppearanceCard extends StatelessWidget {
   final VoidCallback onToggleTheme;
 
-  const _AppearanceCard({
-    required this.onToggleTheme,
-  });
+  const _AppearanceCard({required this.onToggleTheme});
 
   @override
   Widget build(BuildContext context) {
@@ -229,13 +245,10 @@ class _LanguageCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SectionTitle(
-            title: 'Language',
-            subtitle: 'App language preferences',
-          ),
+        children: const [
+          SectionTitle(title: 'Language', subtitle: 'App language preferences'),
           SizedBox(height: AppSizes.lg),
           _StaticSettingRow(
             icon: Icons.language_outlined,
@@ -265,29 +278,35 @@ class _AccountActionsCard extends StatelessWidget {
             subtitle: 'Manage your session and account',
           ),
           const SizedBox(height: AppSizes.lg),
-          AppButton(
-            text: 'Logout',
-            icon: Icons.logout,
-            onPressed: () {
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                AppRoutes.login,
-                (route) => false,
-              );
-            },
+          SizedBox(
+            width: double.infinity,
+            child: AppButton(
+              text: 'Logout',
+              icon: Icons.logout,
+              onPressed: () {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  AppRoutes.login,
+                  (route) => false,
+                );
+              },
+            ),
           ),
           const SizedBox(height: AppSizes.md),
-          AppButton(
-            text: 'Delete Account',
-            icon: Icons.delete_outline,
-            isOutlined: true,
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Delete account will be connected later'),
-                ),
-              );
-            },
+          SizedBox(
+            width: double.infinity,
+            child: AppButton(
+              text: 'Delete Account',
+              icon: Icons.delete_outline,
+              isOutlined: true,
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Delete account will be connected later'),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -301,9 +320,9 @@ class _AppInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        children: const [
           SectionTitle(
             title: 'App Info',
             subtitle: 'Current application details',
@@ -338,6 +357,7 @@ class _SettingSwitchRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
           width: 46,
@@ -346,27 +366,16 @@ class _SettingSwitchRow extends StatelessWidget {
             color: AppColors.primary.withOpacity(0.12),
             borderRadius: BorderRadius.circular(AppSizes.radiusMd),
           ),
-          child: Icon(
-            icon,
-            color: AppColors.primary,
-          ),
+          child: Icon(icon, color: AppColors.primary),
         ),
         const SizedBox(width: AppSizes.md),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
               const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
+              Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
         ),
@@ -401,6 +410,7 @@ class _StaticSettingRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
           width: 46,
@@ -409,36 +419,21 @@ class _StaticSettingRow extends StatelessWidget {
             color: AppColors.primary.withOpacity(0.12),
             borderRadius: BorderRadius.circular(AppSizes.radiusMd),
           ),
-          child: Icon(
-            icon,
-            color: AppColors.primary,
-          ),
+          child: Icon(icon, color: AppColors.primary),
         ),
         const SizedBox(width: AppSizes.md),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
               const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
+              Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
         ),
         const SizedBox(width: AppSizes.md),
-        Icon(
-          trailingIcon,
-          color: trailingColor,
-          size: trailingSize,
-        ),
+        Icon(trailingIcon, color: trailingColor, size: trailingSize),
       ],
     );
   }
@@ -448,27 +443,16 @@ class _InfoRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _InfoRow({
-    required this.label,
-    required this.value,
-  });
+  const _InfoRow({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         Expanded(
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
         ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.w700)),
       ],
     );
   }

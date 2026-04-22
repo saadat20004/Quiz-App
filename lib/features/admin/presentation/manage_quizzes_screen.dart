@@ -579,7 +579,12 @@ class _ManageQuizzesScreenState extends State<ManageQuizzesScreen> {
               const AdminSidebar(selectedRoute: AppRoutes.manageQuizzes),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSizes.lg),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSizes.lg,
+                    AppSizes.md,
+                    AppSizes.lg,
+                    AppSizes.lg,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -604,33 +609,42 @@ class _ManageQuizzesScreenState extends State<ManageQuizzesScreen> {
                         subtitle: 'Create, review, edit, and organize quizzes.',
                       ),
                       const SizedBox(height: AppSizes.lg),
-                      Wrap(
-                        spacing: AppSizes.md,
-                        runSpacing: AppSizes.md,
+                      Row(
                         children: [
-                          _AdminSummaryCard(
-                            title: 'Total Quizzes',
-                            value: '$totalQuizzes',
-                            icon: Icons.quiz_outlined,
-                            iconColor: AppColors.primary,
+                          Expanded(
+                            child: _AdminSummaryCard(
+                              title: 'Total Quizzes',
+                              value: '$totalQuizzes',
+                              icon: Icons.quiz_outlined,
+                              iconColor: AppColors.primary,
+                            ),
                           ),
-                          _AdminSummaryCard(
-                            title: 'Assigned Questions',
-                            value: '$totalQuestions',
-                            icon: Icons.help_outline,
-                            iconColor: AppColors.info,
+                          const SizedBox(width: AppSizes.md),
+                          Expanded(
+                            child: _AdminSummaryCard(
+                              title: 'Assigned Questions',
+                              value: '$totalQuestions',
+                              icon: Icons.help_outline,
+                              iconColor: AppColors.info,
+                            ),
                           ),
-                          _AdminSummaryCard(
-                            title: 'Playable Quizzes',
-                            value: '$playableQuizzes',
-                            icon: Icons.check_circle_outline,
-                            iconColor: AppColors.success,
+                          const SizedBox(width: AppSizes.md),
+                          Expanded(
+                            child: _AdminSummaryCard(
+                              title: 'Playable Quizzes',
+                              value: '$playableQuizzes',
+                              icon: Icons.check_circle_outline,
+                              iconColor: AppColors.success,
+                            ),
                           ),
-                          _AdminSummaryCard(
-                            title: 'Not Ready',
-                            value: '$notReadyQuizzes',
-                            icon: Icons.pause_circle_outline,
-                            iconColor: AppColors.warning,
+                          const SizedBox(width: AppSizes.md),
+                          Expanded(
+                            child: _AdminSummaryCard(
+                              title: 'Not Ready',
+                              value: '$notReadyQuizzes',
+                              icon: Icons.pause_circle_outline,
+                              iconColor: AppColors.warning,
+                            ),
                           ),
                         ],
                       ),
@@ -791,7 +805,6 @@ class _AdminSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      width: 250,
       child: Row(
         children: [
           Container(

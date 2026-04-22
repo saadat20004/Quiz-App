@@ -340,7 +340,12 @@ class _ManageQuestionsScreenState extends State<ManageQuestionsScreen> {
               const AdminSidebar(selectedRoute: AppRoutes.manageQuestions),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSizes.lg),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSizes.lg,
+                    AppSizes.md,
+                    AppSizes.lg,
+                    AppSizes.lg,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -366,33 +371,42 @@ class _ManageQuestionsScreenState extends State<ManageQuestionsScreen> {
                             'Build and maintain the question bank for all quizzes.',
                       ),
                       const SizedBox(height: AppSizes.lg),
-                      Wrap(
-                        spacing: AppSizes.md,
-                        runSpacing: AppSizes.md,
+                      Row(
                         children: [
-                          _AdminSummaryCard(
-                            title: 'Total Questions',
-                            value: '$totalQuestions',
-                            icon: Icons.help_outline,
-                            iconColor: AppColors.primary,
+                          Expanded(
+                            child: _AdminSummaryCard(
+                              title: 'Total Questions',
+                              value: '$totalQuestions',
+                              icon: Icons.help_outline,
+                              iconColor: AppColors.primary,
+                            ),
                           ),
-                          _AdminSummaryCard(
-                            title: 'MCQ Questions',
-                            value: '$multipleChoiceQuestions',
-                            icon: Icons.list_alt_outlined,
-                            iconColor: AppColors.success,
+                          const SizedBox(width: AppSizes.md),
+                          Expanded(
+                            child: _AdminSummaryCard(
+                              title: 'MCQ Questions',
+                              value: '$multipleChoiceQuestions',
+                              icon: Icons.list_alt_outlined,
+                              iconColor: AppColors.success,
+                            ),
                           ),
-                          _AdminSummaryCard(
-                            title: 'Total Options',
-                            value: '$totalOptions',
-                            icon: Icons.format_list_bulleted,
-                            iconColor: AppColors.info,
+                          const SizedBox(width: AppSizes.md),
+                          Expanded(
+                            child: _AdminSummaryCard(
+                              title: 'Total Options',
+                              value: '$totalOptions',
+                              icon: Icons.format_list_bulleted,
+                              iconColor: AppColors.info,
+                            ),
                           ),
-                          _AdminSummaryCard(
-                            title: 'Avg Options',
-                            value: '$averageOptions',
-                            icon: Icons.analytics_outlined,
-                            iconColor: AppColors.warning,
+                          const SizedBox(width: AppSizes.md),
+                          Expanded(
+                            child: _AdminSummaryCard(
+                              title: 'Avg Options',
+                              value: '$averageOptions',
+                              icon: Icons.analytics_outlined,
+                              iconColor: AppColors.warning,
+                            ),
                           ),
                         ],
                       ),
@@ -558,7 +572,6 @@ class _AdminSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      width: 250,
       child: Row(
         children: [
           Container(

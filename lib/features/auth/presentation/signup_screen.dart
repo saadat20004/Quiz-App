@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/constants/app_strings.dart';
@@ -18,10 +19,14 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _fullNameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _mobileController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _fullNameController =
+      TextEditingController();
+  final TextEditingController _emailController =
+      TextEditingController();
+  final TextEditingController _mobileController =
+      TextEditingController();
+  final TextEditingController _passwordController =
+      TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
@@ -87,23 +92,34 @@ class _SignupScreenState extends State<SignupScreen> {
 
   void _submitSignup() {
     if (_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Account created successfully. Please login to continue.',
+          ),
+        ),
+      );
+
       Navigator.pushReplacementNamed(
         context,
-        AppRoutes.dashboard,
+        AppRoutes.login,
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark =
+        Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
-          color: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+          color: isDark
+              ? AppColors.darkBackground
+              : AppColors.lightBackground,
           gradient: isDark ? AppColors.darkBackgroundGlow : null,
         ),
         child: SafeArea(
@@ -120,7 +136,8 @@ class _SignupScreenState extends State<SignupScreen> {
                           ? AppColors.darkBorder
                           : AppColors.lightBorder,
                     ),
-                    borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+                    borderRadius:
+                        BorderRadius.circular(AppSizes.radiusLg),
                   ),
                   child: IconButton(
                     tooltip:
@@ -147,7 +164,8 @@ class _SignupScreenState extends State<SignupScreen> {
                       child: Form(
                         key: _formKey,
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
                           children: [
                             _buildHeader(context),
                             const SizedBox(height: AppSizes.xl),
@@ -162,7 +180,8 @@ class _SignupScreenState extends State<SignupScreen> {
                               hintText: 'Email',
                               prefixIcon: Icons.email_outlined,
                               controller: _emailController,
-                              keyboardType: TextInputType.emailAddress,
+                              keyboardType:
+                                  TextInputType.emailAddress,
                               validator: _validateEmail,
                             ),
                             const SizedBox(height: AppSizes.md),
@@ -186,8 +205,10 @@ class _SignupScreenState extends State<SignupScreen> {
                               hintText: 'Confirm Password',
                               prefixIcon: Icons.lock_outline,
                               obscureText: true,
-                              controller: _confirmPasswordController,
-                              validator: _validateConfirmPassword,
+                              controller:
+                                  _confirmPasswordController,
+                              validator:
+                                  _validateConfirmPassword,
                             ),
                             const SizedBox(height: AppSizes.lg),
                             AppButton(
@@ -207,11 +228,14 @@ class _SignupScreenState extends State<SignupScreen> {
                             ),
                             const SizedBox(height: AppSizes.lg),
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisAlignment:
+                                  MainAxisAlignment.center,
                               children: [
                                 Text(
                                   'Already have an account? ',
-                                  style: Theme.of(context).textTheme.bodyMedium,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium,
                                 ),
                                 GestureDetector(
                                   onTap: () {
@@ -253,7 +277,8 @@ class _SignupScreenState extends State<SignupScreen> {
           height: 64,
           decoration: BoxDecoration(
             gradient: AppColors.primaryGradient,
-            borderRadius: BorderRadius.circular(AppSizes.radiusXl),
+            borderRadius:
+                BorderRadius.circular(AppSizes.radiusXl),
           ),
           child: const Icon(
             Icons.person_add_alt_1_outlined,

@@ -1,26 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../admin/providers/quiz_management_provider.dart';
-import '../providers/quiz_provider.dart';
-import '../../../core/utils/mock_quiz_data.dart';
+
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
-import '../../../core/theme/theme_controller.dart';
-import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
-import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/section_title.dart';
 import '../../../routes/app_routes.dart';
 import '../../../shared/widgets/quiz_card.dart';
 import '../../../shared/widgets/user_sidebar.dart';
 import '../../../shared/widgets/user_top_bar.dart';
+import '../../admin/providers/quiz_management_provider.dart';
+import '../providers/quiz_provider.dart';
 
-class QuizListScreen extends StatelessWidget {
+class QuizListScreen extends StatefulWidget {
   const QuizListScreen({super.key});
 
   @override
+  State<QuizListScreen> createState() => _QuizListScreenState();
+}
+
+class _QuizListScreenState extends State<QuizListScreen> {
+  String _selectedCategory = 'All';
+
+  final List<String> _categories = const [
+    'All',
+    'Science',
+    'Mathematics',
+    'History',
+    'Technology',
+    'English',
+  ];
+
+  @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: Container(
@@ -46,29 +59,16 @@ class QuizListScreen extends StatelessWidget {
               const UserSidebar(selectedRoute: AppRoutes.quizList),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSizes.lg),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSizes.lg,
+                    AppSizes.md,
+                    AppSizes.lg,
+                    AppSizes.lg,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      UserTopBar(
-                        hintText: 'Search by title, category, or difficulty...',
-                        actions: [
-                          AppButton(
-                            text: 'Create Quiz',
-                            icon: Icons.add,
-                            isFullWidth: false,
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Create Quiz page will be added in admin flow',
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
+                      _buildTopBar(),
                       const SizedBox(height: AppSizes.xl),
                       const SectionTitle(
                         title: 'Quiz Library',
@@ -76,10 +76,10 @@ class QuizListScreen extends StatelessWidget {
                             'Browse available quizzes, filter by category, and start solving.',
                       ),
                       const SizedBox(height: AppSizes.lg),
-                      _buildFilterRow(),
+                      _buildCategoryFilters(),
                       const SizedBox(height: AppSizes.lg),
                       _buildFeaturedBanner(context),
-                      const SizedBox(height: AppSizes.lg),
+                      const SizedBox(height: AppSizes.xl),
                       _buildQuizGrid(context),
                     ],
                   ),
@@ -92,37 +92,89 @@ class QuizListScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFilterRow() {
-    return const Wrap(
-      spacing: AppSizes.md,
-      runSpacing: AppSizes.md,
+  Widget _buildTopBar() {
+    return const Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        _FilterChip(label: 'All', selected: true),
-        _FilterChip(label: 'Science'),
-        _FilterChip(label: 'Mathematics'),
-        _FilterChip(label: 'History'),
-        _FilterChip(label: 'Technology'),
-        _FilterChip(label: 'English'),
+        Expanded(
+          child: UserTopBar(
+            hintText: 'Search by title, category, or difficulty...',
+          ),
+        ),
       ],
     );
   }
 
+  Widget _buildCategoryFilters() {
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: _categories.map((category) {
+        final bool isSelected = _selectedCategory == category;
+
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              _selectedCategory = category;
+            });
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSizes.lg,
+              vertical: 12,
+            ),
+            decoration: BoxDecoration(
+              gradient: isSelected ? AppColors.primaryGradient : null,
+              color: isSelected ? null : Colors.transparent,
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: isSelected
+                    ? Colors.transparent
+                    : Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkBorder
+                    : AppColors.lightBorder,
+              ),
+            ),
+            child: Text(
+              category,
+              style: TextStyle(
+                color: isSelected
+                    ? Colors.white
+                    : Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.lightTextPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
   Widget _buildFeaturedBanner(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return AppCard(
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(AppSizes.lg),
+        padding: const EdgeInsets.fromLTRB(
+          AppSizes.lg,
+          AppSizes.md,
+          AppSizes.lg,
+          AppSizes.lg,
+        ),
         decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(AppSizes.radiusLg),
           gradient: LinearGradient(
             colors: [
-              AppColors.primary.withOpacity(0.20),
-              AppColors.secondary.withOpacity(0.10),
+              AppColors.primary.withOpacity(isDark ? 0.18 : 0.10),
               Colors.transparent,
             ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
           ),
-          borderRadius: BorderRadius.circular(AppSizes.radiusLg),
         ),
         child: Row(
           children: [
@@ -134,7 +186,7 @@ class QuizListScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppSizes.radiusXl),
               ),
               child: const Icon(
-                Icons.auto_awesome_outlined,
+                Icons.auto_awesome,
                 color: Colors.white,
                 size: 34,
               ),
@@ -146,22 +198,14 @@ class QuizListScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Featured Quiz of the Week',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                   ),
-                  SizedBox(height: AppSizes.xs),
+                  SizedBox(height: 6),
                   Text(
-                    'Challenge yourself with our top-rated Science & Technology mixed quiz.',
+                    'Challenge yourself with our most engaging curated quiz collection.',
                   ),
                 ],
               ),
-            ),
-            const SizedBox(width: AppSizes.md),
-            AppButton(
-              text: 'Start Now',
-              isFullWidth: false,
-              onPressed: () {
-                Navigator.pushNamed(context, AppRoutes.quizDetail);
-              },
             ),
           ],
         ),
@@ -175,24 +219,34 @@ class QuizListScreen extends StatelessWidget {
 
     final quizzes = quizManagementProvider.quizzes
         .where((quiz) => quiz.questions.isNotEmpty)
+        .where(
+          (quiz) =>
+              _selectedCategory == 'All' || quiz.category == _selectedCategory,
+        )
         .toList();
 
     if (quizzes.isEmpty) {
       return AppCard(
-        child: Column(
-          children: const [
-            Icon(Icons.quiz_outlined, size: 56, color: AppColors.primary),
-            SizedBox(height: AppSizes.md),
-            Text(
-              'No playable quizzes available yet',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+        child: SizedBox(
+          width: double.infinity,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppSizes.xl),
+            child: Column(
+              children: const [
+                Icon(Icons.quiz_outlined, size: 56, color: AppColors.primary),
+                SizedBox(height: AppSizes.md),
+                Text(
+                  'No playable quizzes available',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                ),
+                SizedBox(height: AppSizes.sm),
+                Text(
+                  'Try another category or assign questions from the admin panel.',
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
-            SizedBox(height: AppSizes.sm),
-            Text(
-              'Admin needs to assign questions before quizzes appear here.',
-              textAlign: TextAlign.center,
-            ),
-          ],
+          ),
         ),
       );
     }
@@ -201,65 +255,27 @@ class QuizListScreen extends StatelessWidget {
       spacing: AppSizes.md,
       runSpacing: AppSizes.md,
       children: quizzes.map((quiz) {
-        return QuizCard(
-          title: quiz.title,
-          subtitle: quiz.description,
-          progress: 0.0,
-          questions: quiz.totalQuestions,
-          attempts: 0,
-          difficulty: quiz.difficulty,
-          duration: '${quiz.durationMinutes} min',
-          onTap: () {
-            quizProvider.loadQuizById(quiz.id, quizzes);
-            Navigator.pushNamed(context, AppRoutes.quizDetail);
-          },
-          onStart: () {
-            quizProvider.loadQuizById(quiz.id, quizzes);
-            Navigator.pushNamed(context, AppRoutes.quizDetail);
-          },
+        return SizedBox(
+          width: 320,
+          child: QuizCard(
+            title: quiz.title,
+            subtitle: quiz.description,
+            progress: 0.0,
+            questions: quiz.totalQuestions,
+            attempts: 0,
+            difficulty: quiz.difficulty,
+            duration: '${quiz.durationMinutes} min',
+            onTap: () {
+              quizProvider.loadQuizById(quiz.id, quizzes);
+              Navigator.pushNamed(context, AppRoutes.quizDetail);
+            },
+            onStart: () {
+              quizProvider.loadQuizById(quiz.id, quizzes);
+              Navigator.pushNamed(context, AppRoutes.quizDetail);
+            },
+          ),
         );
       }).toList(),
-    );
-  }
-}
-
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-
-  const _FilterChip({required this.label, this.selected = false});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        gradient: selected ? AppColors.primaryGradient : null,
-        color: selected
-            ? null
-            : (isDark
-                  ? AppColors.darkCard.withOpacity(0.75)
-                  : Colors.white.withOpacity(0.90)),
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(
-          color: selected
-              ? Colors.transparent
-              : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-        ),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: selected
-              ? Colors.white
-              : (isDark
-                    ? AppColors.darkTextSecondary
-                    : AppColors.lightTextSecondary),
-          fontWeight: FontWeight.w600,
-        ),
-      ),
     );
   }
 }

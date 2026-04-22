@@ -18,22 +18,22 @@ class ManageUsersScreen extends StatefulWidget {
 class _ManageUsersScreenState extends State<ManageUsersScreen> {
   final List<_AdminUserItem> _users = [
     const _AdminUserItem(
-      fullName: 'Asim Hafeez',
-      email: 'asim@example.com',
+      fullName: 'Saadat Sohail',
+      email: 'saadat@example.com',
       mobile: '03001234567',
       role: 'Participant',
       isActive: true,
     ),
     const _AdminUserItem(
-      fullName: 'Ava Johnson',
-      email: 'ava@example.com',
+      fullName: 'Ayesha Noor',
+      email: 'ayesha@example.com',
       mobile: '03004561234',
       role: 'Participant',
       isActive: true,
     ),
     const _AdminUserItem(
-      fullName: 'Michael Lee',
-      email: 'michael@example.com',
+      fullName: 'Muhammad Bilal',
+      email: 'bilal@example.com',
       mobile: '03111234567',
       role: 'Participant',
       isActive: false,
@@ -49,9 +49,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
 
   void _toggleUserStatus(int index) {
     setState(() {
-      _users[index] = _users[index].copyWith(
-        isActive: !_users[index].isActive,
-      );
+      _users[index] = _users[index].copyWith(isActive: !_users[index].isActive);
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -65,23 +63,91 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     );
   }
 
-  void _editUser(int index) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Edit "${_users[index].fullName}" will be connected next',
-        ),
-      ),
+  void _showEditUserDialog(BuildContext context, int index) {
+    final user = _users[index];
+
+    final nameController = TextEditingController(text: user.fullName);
+    final emailController = TextEditingController(text: user.email);
+    final mobileController = TextEditingController(text: user.mobile);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit User'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Full Name'),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: emailController,
+                decoration: const InputDecoration(labelText: 'Email'),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: mobileController,
+                decoration: const InputDecoration(labelText: 'Mobile'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _users[index] = _users[index].copyWith(
+                    fullName: nameController.text.trim(),
+                    email: emailController.text.trim(),
+                    mobile: mobileController.text.trim(),
+                  );
+                });
+
+                Navigator.pop(context);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('User updated successfully')),
+                );
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  void _viewPerformance(int index) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Performance view for "${_users[index].fullName}" will be connected next',
-        ),
-      ),
+  void _showUserPerformance(BuildContext context, _AdminUserItem user) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('${user.fullName} Performance'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              _PerfRow(label: 'Total Attempts', value: '24'),
+              _PerfRow(label: 'Average Score', value: '84%'),
+              _PerfRow(label: 'Best Score', value: '96%'),
+              _PerfRow(label: 'Completed Quizzes', value: '18'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -105,18 +171,19 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
         child: SafeArea(
           child: Row(
             children: [
-              const AdminSidebar(
-                selectedRoute: AppRoutes.manageUsers,
-              ),
+              const AdminSidebar(selectedRoute: AppRoutes.manageUsers),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSizes.lg),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSizes.lg,
+                    AppSizes.md,
+                    AppSizes.lg,
+                    AppSizes.lg,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const AdminTopBar(
-                        hintText: 'Search users...',
-                      ),
+                      const AdminTopBar(hintText: 'Search users...'),
                       const SizedBox(height: AppSizes.xl),
                       const SectionTitle(
                         title: 'Manage Users',
@@ -124,33 +191,42 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                             'Review participant accounts, roles, and account status.',
                       ),
                       const SizedBox(height: AppSizes.lg),
-                      Wrap(
-                        spacing: AppSizes.md,
-                        runSpacing: AppSizes.md,
+                      Row(
                         children: [
-                          _AdminSummaryCard(
-                            title: 'Total Users',
-                            value: '$totalUsers',
-                            icon: Icons.people_outline,
-                            iconColor: AppColors.primary,
+                          Expanded(
+                            child: _AdminSummaryCard(
+                              title: 'Total Users',
+                              value: '$totalUsers',
+                              icon: Icons.people_outline,
+                              iconColor: AppColors.primary,
+                            ),
                           ),
-                          _AdminSummaryCard(
-                            title: 'Active Users',
-                            value: '$activeUsers',
-                            icon: Icons.check_circle_outline,
-                            iconColor: AppColors.success,
+                          const SizedBox(width: AppSizes.md),
+                          Expanded(
+                            child: _AdminSummaryCard(
+                              title: 'Active Users',
+                              value: '$activeUsers',
+                              icon: Icons.check_circle_outline,
+                              iconColor: AppColors.success,
+                            ),
                           ),
-                          _AdminSummaryCard(
-                            title: 'Inactive Users',
-                            value: '$inactiveUsers',
-                            icon: Icons.pause_circle_outline,
-                            iconColor: AppColors.warning,
+                          const SizedBox(width: AppSizes.md),
+                          Expanded(
+                            child: _AdminSummaryCard(
+                              title: 'Inactive Users',
+                              value: '$inactiveUsers',
+                              icon: Icons.pause_circle_outline,
+                              iconColor: AppColors.warning,
+                            ),
                           ),
-                          _AdminSummaryCard(
-                            title: 'Admin Accounts',
-                            value: '$adminUsers',
-                            icon: Icons.admin_panel_settings_outlined,
-                            iconColor: AppColors.info,
+                          const SizedBox(width: AppSizes.md),
+                          Expanded(
+                            child: _AdminSummaryCard(
+                              title: 'Admin Accounts',
+                              value: '$adminUsers',
+                              icon: Icons.admin_panel_settings_outlined,
+                              iconColor: AppColors.info,
+                            ),
                           ),
                         ],
                       ),
@@ -173,10 +249,12 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                                 children: [
                                   _AdminUserRow(
                                     user: user,
-                                    onEdit: () => _editUser(index),
-                                    onToggleStatus: () => _toggleUserStatus(index),
+                                    onEdit: () =>
+                                        _showEditUserDialog(context, index),
+                                    onToggleStatus: () =>
+                                        _toggleUserStatus(index),
                                     onViewPerformance: () =>
-                                        _viewPerformance(index),
+                                        _showUserPerformance(context, user),
                                   ),
                                   if (index != _users.length - 1)
                                     Divider(
@@ -203,9 +281,9 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
   }
 
   Widget _buildHeaderRow(BuildContext context) {
-    final style = Theme.of(context).textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.w700,
-        );
+    final style = Theme.of(
+      context,
+    ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700);
 
     return Row(
       children: [
@@ -215,6 +293,26 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
         Expanded(child: Text('Status', style: style)),
         Expanded(flex: 2, child: Text('Actions', style: style)),
       ],
+    );
+  }
+}
+
+class _PerfRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _PerfRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Expanded(child: Text(label)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+        ],
+      ),
     );
   }
 }
@@ -235,7 +333,6 @@ class _AdminSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      width: 250,
       child: Row(
         children: [
           Container(
@@ -344,7 +441,9 @@ class _AdminUserRow extends StatelessWidget {
               user.role,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: user.role == 'Admin' ? AppColors.info : AppColors.primary,
+                color: user.role == 'Admin'
+                    ? AppColors.info
+                    : AppColors.primary,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -391,7 +490,9 @@ class _AdminUserRow extends StatelessWidget {
                 tooltip: 'View performance',
                 onTap: onViewPerformance,
                 color: AppColors.info,
-                borderColor: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                borderColor: isDark
+                    ? AppColors.darkBorder
+                    : AppColors.lightBorder,
               ),
             ],
           ),
@@ -431,15 +532,12 @@ class _ActionIconButton extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: borderColor ??
+              color:
+                  borderColor ??
                   (isDark ? AppColors.darkBorder : AppColors.lightBorder),
             ),
           ),
-          child: Icon(
-            icon,
-            color: color ?? AppColors.primary,
-            size: 20,
-          ),
+          child: Icon(icon, color: color ?? AppColors.primary, size: 20),
         ),
       ),
     );

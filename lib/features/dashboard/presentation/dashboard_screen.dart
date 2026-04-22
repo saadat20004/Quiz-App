@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:fl_chart/fl_chart.dart';
+import '../../admin/providers/quiz_management_provider.dart';
+import '../../quiz/providers/quiz_provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
-import '../../../core/theme/theme_controller.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
-import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/section_title.dart';
 import '../../../routes/app_routes.dart';
 import '../../../shared/widgets/leaderboard_tile.dart';
@@ -44,29 +46,16 @@ class DashboardScreen extends StatelessWidget {
               const UserSidebar(selectedRoute: AppRoutes.dashboard),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSizes.lg),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSizes.lg,
+                    AppSizes.md,
+                    AppSizes.lg,
+                    AppSizes.lg,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      UserTopBar(
-                        hintText: 'Search quizzes, users, reports...',
-                        actions: [
-                          AppButton(
-                            text: 'Create Quiz',
-                            icon: Icons.add,
-                            isFullWidth: false,
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Create Quiz page will be added in admin flow',
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
+                      _buildTopBar(context),
                       const SizedBox(height: AppSizes.xl),
                       const SectionTitle(
                         title: 'Dashboard',
@@ -88,13 +77,23 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsGrid() {
-    return const Wrap(
-      spacing: AppSizes.md,
-      runSpacing: AppSizes.md,
+  Widget _buildTopBar(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        SizedBox(
-          width: 250,
+        Expanded(
+          child: const UserTopBar(
+            hintText: 'Search quizzes, users, reports...',
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatsGrid() {
+    return const Row(
+      children: [
+        Expanded(
           child: StatCard(
             title: 'Total Quizzes',
             value: '48',
@@ -104,8 +103,8 @@ class DashboardScreen extends StatelessWidget {
             isPositive: true,
           ),
         ),
-        SizedBox(
-          width: 250,
+        SizedBox(width: AppSizes.md),
+        Expanded(
           child: StatCard(
             title: 'Completed',
             value: '24',
@@ -115,8 +114,8 @@ class DashboardScreen extends StatelessWidget {
             isPositive: true,
           ),
         ),
-        SizedBox(
-          width: 250,
+        SizedBox(width: AppSizes.md),
+        Expanded(
           child: StatCard(
             title: 'Pending',
             value: '6',
@@ -126,8 +125,8 @@ class DashboardScreen extends StatelessWidget {
             isPositive: false,
           ),
         ),
-        SizedBox(
-          width: 250,
+        SizedBox(width: AppSizes.md),
+        Expanded(
           child: StatCard(
             title: 'Average Score',
             value: '86%',
@@ -160,78 +159,7 @@ class DashboardScreen extends StatelessWidget {
                       subtitle: 'Your latest quiz content and progress',
                     ),
                     const SizedBox(height: AppSizes.lg),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          QuizCard(
-                            title: 'Science Challenge',
-                            subtitle: 'Physics, chemistry, and biology basics',
-                            progress: 0.82,
-                            questions: 20,
-                            attempts: 164,
-                            difficulty: 'Medium',
-                            duration: '15 min',
-                            onTap: () {
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.quizDetail,
-                              );
-                            },
-                            onStart: () {
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.quizDetail,
-                              );
-                            },
-                          ),
-                          const SizedBox(width: AppSizes.md),
-                          QuizCard(
-                            title: 'Math Speed Test',
-                            subtitle: 'Quick arithmetic and algebra questions',
-                            progress: 0.56,
-                            questions: 15,
-                            attempts: 98,
-                            difficulty: 'Easy',
-                            duration: '10 min',
-                            onTap: () {
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.quizDetail,
-                              );
-                            },
-                            onStart: () {
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.quizDetail,
-                              );
-                            },
-                          ),
-                          const SizedBox(width: AppSizes.md),
-                          QuizCard(
-                            title: 'History Basics',
-                            subtitle: 'World history and important events',
-                            progress: 0.91,
-                            questions: 25,
-                            attempts: 205,
-                            difficulty: 'Hard',
-                            duration: '20 min',
-                            onTap: () {
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.quizDetail,
-                              );
-                            },
-                            onStart: () {
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.quizDetail,
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
+                    _buildQuizSection(context),
                   ],
                 ),
               ),
@@ -245,64 +173,7 @@ class DashboardScreen extends StatelessWidget {
                       subtitle: 'Visual area reserved for charts and reports',
                     ),
                     const SizedBox(height: AppSizes.lg),
-                    Container(
-                      height: 260,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-                        border: Border.all(
-                          color: isDark
-                              ? AppColors.darkBorder
-                              : AppColors.lightBorder,
-                        ),
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.primary.withOpacity(isDark ? 0.10 : 0.08),
-                            Colors.transparent,
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 72,
-                              height: 72,
-                              decoration: BoxDecoration(
-                                gradient: AppColors.primaryGradient,
-                                borderRadius: BorderRadius.circular(
-                                  AppSizes.radiusXl,
-                                ),
-                              ),
-                              child: const Icon(
-                                Icons.insights_outlined,
-                                color: Colors.white,
-                                size: 34,
-                              ),
-                            ),
-                            const SizedBox(height: AppSizes.md),
-                            const Text(
-                              'Chart area',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'We will add charts later',
-                              style: TextStyle(
-                                color: isDark
-                                    ? AppColors.darkTextSecondary
-                                    : AppColors.lightTextSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    const _DashboardPerformanceChart(),
                   ],
                 ),
               ),
@@ -324,14 +195,14 @@ class DashboardScreen extends StatelessWidget {
                 _leaderboardDivider(context),
                 const LeaderboardTile(
                   rank: 1,
-                  name: 'Ava Johnson',
+                  name: 'Ayesha Noor',
                   category: 'Science',
                   score: 980,
                 ),
                 _leaderboardDivider(context),
                 const LeaderboardTile(
                   rank: 2,
-                  name: 'Michael Lee',
+                  name: 'Muhammad Bilal',
                   category: 'Mathematics',
                   score: 945,
                 ),
@@ -345,14 +216,14 @@ class DashboardScreen extends StatelessWidget {
                 _leaderboardDivider(context),
                 const LeaderboardTile(
                   rank: 4,
-                  name: 'Daniel Noor',
+                  name: 'Ali Hassan',
                   category: 'Technology',
                   score: 902,
                 ),
                 _leaderboardDivider(context),
                 const LeaderboardTile(
                   rank: 5,
-                  name: 'Emma Yusuf',
+                  name: 'Hafsa Ahmed',
                   category: 'English',
                   score: 890,
                 ),
@@ -364,12 +235,117 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildQuizSection(BuildContext context) {
+    final quizProvider = Provider.of<QuizProvider>(context, listen: false);
+    final quizManagementProvider = Provider.of<QuizManagementProvider>(context);
+
+    final playableQuizzes = quizManagementProvider.quizzes
+        .where((quiz) => quiz.questions.isNotEmpty)
+        .toList();
+
+    if (playableQuizzes.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: AppSizes.xl),
+          child: Text('No playable quizzes available yet'),
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: playableQuizzes.map((quiz) {
+          return Padding(
+            padding: const EdgeInsets.only(right: AppSizes.md),
+            child: SizedBox(
+              width: 320,
+              child: QuizCard(
+                title: quiz.title,
+                subtitle: quiz.description,
+                progress: 0.0,
+                questions: quiz.totalQuestions,
+                attempts: 0,
+                difficulty: quiz.difficulty,
+                duration: '${quiz.durationMinutes} min',
+                onTap: () {
+                  quizProvider.loadQuizById(quiz.id, playableQuizzes);
+                  Navigator.pushNamed(context, AppRoutes.quizDetail);
+                },
+                onStart: () {
+                  quizProvider.loadQuizById(quiz.id, playableQuizzes);
+                  Navigator.pushNamed(context, AppRoutes.quizDetail);
+                },
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   Widget _leaderboardDivider(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Divider(
       color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
       height: 20,
+    );
+  }
+}
+
+class _DashboardPerformanceChart extends StatelessWidget {
+  const _DashboardPerformanceChart();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 260,
+      child: LineChart(
+        LineChartData(
+          minY: 0,
+          maxY: 100,
+          gridData: FlGridData(show: true),
+          borderData: FlBorderData(show: false),
+          titlesData: FlTitlesData(
+            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(showTitles: true, reservedSize: 30),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (value, meta) {
+                  const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+                  final index = value.toInt();
+                  if (index < 0 || index >= labels.length) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return Text(labels[index]);
+                },
+              ),
+            ),
+          ),
+          lineBarsData: [
+            LineChartBarData(
+              isCurved: true,
+              dotData: FlDotData(show: true),
+              belowBarData: BarAreaData(show: true),
+              spots: const [
+                FlSpot(0, 62),
+                FlSpot(1, 74),
+                FlSpot(2, 68),
+                FlSpot(3, 82),
+                FlSpot(4, 78),
+                FlSpot(5, 90),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
